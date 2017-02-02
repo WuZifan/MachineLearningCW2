@@ -1,5 +1,7 @@
 # # -*- coding:utf8 -*-
 import scipy.io as sio
+import math
+import List
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -28,3 +30,38 @@ def generate_attributes(num_attributes):
 def DECISION_TREE_LEARNING(examples,attributes,binary_targets):
     tree=1
     return tree
+
+
+def choose_best_attribute(dataset, attributes, binary_target):
+    n0 = 0
+    n1 = 0
+    for value in dataset[:, 0]:
+        if value == 1:
+            n1 += 1
+        else:
+            n0 += 1
+
+    entropyd = - math.log10(n0) / math.log10(10) * n0 / (n0 + n1) - math.log10(n1) / math.log10(10) * n1 /(n0 + n1)
+
+    num = len(dataset[0])
+
+    entropy = []
+    for index in xrange(num):
+        n0 = 0
+        n1 = 0
+        for value in dataset[:, index]:
+            if value == 1:
+                n1 += 1
+            else:
+                n0 += 1
+        etemp = - math.log10(n0) / math.log10(10) * n0 / (n0 + n1) - math.log10(n1) / math.log10(10) * n1 / (n0 + n1)
+        entropy.append(entropyd - etemp)
+
+    return List.index(max(entropy))
+
+
+
+
+
+
+
