@@ -40,7 +40,7 @@ def DECISION_TREE_LEARNING(examples, attributes, binary_targets):
 def get_information_gain(p, n):
     return - p / (p + n) * mt.log10(p / (p + n)) / mt.log10(2) - n / (p + n) * mt.log10(n / (p + n)) / mt.log10(2)
 
-
+#fine
 def choose_best_attribute(data_set, attributes, binary_target):
     n0 = 0
     n1 = 0
