@@ -4,7 +4,7 @@ import math as mt
 import matplotlib.pyplot as plt
 import numpy as np
 import time
-from graphviz import Digraph
+# from graphviz import Digraph
 
 __Author__ = 'Tree_Diagram'
 
@@ -173,26 +173,71 @@ def DrawDecisionTree(label, tree, dot):
         dot.edges(label, leaves[1], label='1')
     return dot
 
+def topythonlist(data):
+    mylist=[]
+    for d in data:
+        for dd in d:
+            mylist.append(dd)
+    return mylist
+
+def topythonnestedlist(data):
+    mynestedlist=[]
+    for da in data:
+        mylist=[]
+        for dda in da:
+            mylist.append(dda)
+        mynestedlist.append(mylist)
+    return mynestedlist
+
 if __name__ == "__main__":
     # 导入数据
     matfn = u'/home/roland/PycharmProjects/test1/forStudents/cleandata_students.mat'
+    matfn2= u'/home/roland/PycharmProjects/test1/forStudents/noisydata_students.mat'
     data = sio.loadmat(matfn)
-    # 45个属性的数据,对应choose_emotion中第一个参数
-    facial_expression=[]
-    for datay in data['y']:
-        for dy in datay:
-            facial_expression.append(dy)
-    # 不同的label,对应examples
-    examples =[]
-    for ac in data['x']:
-        acx=[]
-        for action in ac:
-            acx.append(action)
-        examples.append(acx)
+    noisydata=sio.loadmat(matfn2)
 
-    # target= examples_havesamevalue(choose_emotion(facial_expression,4))
-    tree=DECISION_TREE_LEARNING(examples,generate_attributes(45),choose_emotion(facial_expression,4))
-    print TREE_NODES
+    # 45个属性的数据,对应choose_emotion中第一个参数
+    facial_expression=topythonlist(data['y'])
+
+    # 45个属性的数据,对应choose_emotion中第一个参数,for noisy
+    no_facial_expression=topythonlist(noisydata['y'])
+
+    # 不同的label,对应examples
+    examples =topythonnestedlist(data['x'])
+
+    # 不同的label,对应examples,for noisy
+    noisyexample=topythonnestedlist(noisydata['x'])
+
+    # for attribute
+    attributes=generate_attributes(45)
+
+    # for clean TREE
+    TREELIST = []
+    for x in range(1,11):
+        for j in range(1,7):
+            # for binary_targets
+            binary_targets = choose_emotion(facial_expression, j)
+            DECISION_TREE_LEARNING(examples[x::10],attributes,binary_targets[x::10])
+            TREELIST.append(TREE_NODES)
+            TREE_NODES=[]
+
+    for tree in TREELIST:
+        print tree
+
+    print 'noisy'
+
+    # for noisy TREE
+    NOISYTREELIST=[]
+    for x in range(1,11):
+        for j in range(1,7):
+            # for binary_targets
+            binary_targets = choose_emotion(no_facial_expression, j)
+            DECISION_TREE_LEARNING(noisyexample[x::10],attributes,binary_targets[x::10])
+            NOISYTREELIST.append(TREE_NODES)
+            TREE_NODES=[]
+
+    for tree in NOISYTREELIST:
+        print tree
     # print len(data['x'][0])
 
 
