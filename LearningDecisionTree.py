@@ -22,7 +22,7 @@ def CHOOSE_EMOTION(facial_expression,emotion):
             choosen_emotion.append(0)
     return choosen_emotion
 
-def generate_attributes(num_attributes):
+def generate_attributes(num_attributes): #len(data['x'][0])
     return [range(0,45)]
 
 def DECISION_TREE_LEARNING(examples,attributes,binary_targets):
