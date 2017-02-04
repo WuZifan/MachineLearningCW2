@@ -78,3 +78,14 @@ def choose_best_attribute(data_set, attributes, binary_target):
         information_gain.append(entropy - entropy0 - entropy1)
 
     return list.index(max(information_gain))
+
+def MAJORITY_VALUE(binary_targets):
+    length = 0
+    for row in binary_targets:
+        if row == 1:
+            length = length + 1
+
+    if length * 2 >= len(binary_targets):
+        return 1
+    else:
+        return 0
