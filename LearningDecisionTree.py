@@ -146,6 +146,7 @@ def DrawDecisionTree(label, tree, dot):
         dot.edges(label, leaves[1], label='1')
     return dot
 
+
 if __name__ == "__main__":
     # 导入数据
     matfn = u'/home/roland/PycharmProjects/test1/forStudents/cleandata_students.mat'
