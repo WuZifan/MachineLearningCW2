@@ -4,6 +4,7 @@ import math as mt
 import matplotlib.pyplot as plt
 import numpy as np
 import time
+import graphviz
 
 __Author__ = 'Tree_Diagram'
 
@@ -128,6 +129,22 @@ def DECISION_TREE_LEARNING(examples, attributes, binary_targets):
                 DECISION_TREE_LEARNING(newexamples,attributes,newbinary_targets)[0]=name
     tree = 1
     return tree
+
+def DrawDecisionTree(label, tree, dot):
+    for node in tree:
+        if node[0] == label:
+            item = node
+        break
+    [label, name, leaves]= item
+    dot.node(label, name)
+    if len(leaves) == 0:
+        pass
+    else:
+        DrawDecisionTree(leaves[0], tree, dot)
+        DrawDecisionTree(leaves[1], tree, dot)
+        dot.edges(label, leaves[0], label='0')
+        dot.edges(label, leaves[1], label='1')
+    return dot
 
 if __name__ == "__main__":
     # 导入数据
