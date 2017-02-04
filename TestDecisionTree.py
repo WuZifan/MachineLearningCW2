@@ -189,55 +189,87 @@ def topythonnestedlist(data):
         mynestedlist.append(mylist)
     return mynestedlist
 
+# 预测函数
+def predictions(TreeList,testData):
+    labbel=[]
+    for exam in testData:
+        for ind,tree in enumerate(TreeList):
+            root=tree[-1]
+            flag=find_labbel(exam,tree,root)
+            if flag==1:
+                labbel.append(ind+1)
+                break
+    return labbel;
+
+def find_labbel(exam,tree,root):
+    if root[1]=='YES':
+        return 1
+    elif root[1]=='NO':
+        return 0
+    else:
+        attribute_num=int(root[1])
+        real_au=exam[attribute_num]
+        if real_au==0:
+            next_node_index=0;
+            for ind,node in enumerate(tree):
+                if node[0]==root[2][0]:
+                    next_node_index=ind
+                    break
+            return find_labbel(exam,tree,tree[next_node_index])
+        else:
+            next_node_index=0;
+            for ind,node in enumerate(tree):
+                if node[0]==root[2][1]:
+                    next_node_index=ind
+                    break
+            return find_labbel(exam,tree,tree[next_node_index])
+
 if __name__ == "__main__":
     # 导入数据
     matfn = u'/home/roland/PycharmProjects/test1/forStudents/cleandata_students.mat'
-    matfn2= u'/home/roland/PycharmProjects/test1/forStudents/noisydata_students.mat'
     data = sio.loadmat(matfn)
-    noisydata=sio.loadmat(matfn2)
+
 
     # 45个属性的数据,对应choose_emotion中第一个参数
     facial_expression=topythonlist(data['y'])
 
-    # 45个属性的数据,对应choose_emotion中第一个参数,for noisy
-    no_facial_expression=topythonlist(noisydata['y'])
-
     # 不同的label,对应examples
     examples =topythonnestedlist(data['x'])
-
-    # 不同的label,对应examples,for noisy
-    noisyexample=topythonnestedlist(noisydata['x'])
 
     # for attribute
     attributes=generate_attributes(45)
 
+    test_examples=[]
+    train_examples=[]
+
+    test_facial_expression=[]
+    train_facial_expression=[]
+
+    for ind,val in enumerate(examples):
+        # 选取20%作为test
+        if ind%5==0:
+            test_examples.append(examples[ind])
+            test_facial_expression.append(facial_expression[ind])
+        else:
+            train_examples.append(examples[ind])
+            train_facial_expression.append(facial_expression[ind])
+
+
     # for clean TREE
     TREELIST = []
-    for x in range(1,11):
-        for j in range(1,7):
-            # for binary_targets
-            binary_targets = choose_emotion(facial_expression, j)
-            DECISION_TREE_LEARNING(examples[x::10],attributes,binary_targets[x::10])
-            TREELIST.append(TREE_NODES)
-            TREE_NODES=[]
+    for j in range(1,7):
+        # for binary_targets
+        binary_targets = choose_emotion(train_facial_expression, j)
+        DECISION_TREE_LEARNING(train_examples,attributes,binary_targets)
+        TREELIST.append(TREE_NODES)
+        TREE_NODES=[]
 
     for tree in TREELIST:
         print tree
 
-    print 'noisy'
-
-    # for noisy TREE
-    NOISYTREELIST=[]
-    for x in range(1,11):
-        for j in range(1,7):
-            # for binary_targets
-            binary_targets = choose_emotion(no_facial_expression, j)
-            DECISION_TREE_LEARNING(noisyexample[x::10],attributes,binary_targets[x::10])
-            NOISYTREELIST.append(TREE_NODES)
-            TREE_NODES=[]
-
-    for tree in NOISYTREELIST:
-        print tree
+    test_labbel=predictions(TREELIST,test_examples)
+    print test_labbel
+    print len(test_labbel)
     # print len(data['x'][0])
 
 
