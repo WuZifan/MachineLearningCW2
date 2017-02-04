@@ -61,7 +61,7 @@ def choose_best_attribute(data_set, attributes, binary_target):
         nn0 = 0
         nn1 = 0
 
-        for ind, value in enumerate(data_set[:, index]):
+        for ind, value in enumerate(data_set[:, index):
             if value == 1:
                 if binary_target[ind] == 1:
                     pn1 += 1
@@ -79,7 +79,8 @@ def choose_best_attribute(data_set, attributes, binary_target):
 
     return list.index(max(information_gain))
 
-def MAJORITY_VALUE(binary_targets):
+
+def majority_value(binary_targets):
     length = 0
     for row in binary_targets:
         if row == 1:
