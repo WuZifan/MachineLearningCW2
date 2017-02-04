@@ -4,7 +4,7 @@ import math as mt
 import matplotlib.pyplot as plt
 import numpy as np
 import time
-import graphviz
+from graphviz import Digraph
 
 __Author__ = 'Tree_Diagram'
 
