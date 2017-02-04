@@ -19,7 +19,7 @@ def choose_emotion(facial_expression, emotion):
 
 # 将属性编号为0到44，对应attributes
 def generate_attributes(num_attributes):
-    return [range(0, 45)]
+    return range(0, num_attributes)
 
 def examples_havesamevalue(binary_targets):
     flag=True
@@ -37,7 +37,10 @@ def examples_havesamevalue(binary_targets):
         return -1
 
 def get_information_gain(p, n):
-    return - p / (p + n) * mt.log10(p / (p + n)) / mt.log10(2) - n / (p + n) * mt.log10(n / (p + n)) / mt.log10(2)
+    pf = float(p)
+    nf = float(n)
+    return - pf / (pf + nf) * mt.log10(pf / (pf + nf)) / mt.log10(2) \
+           - nf / (pf + nf) * mt.log10(nf / (pf + nf)) / mt.log10(2)
 
 #fine
 def choose_best_attribute(data_set, attributes, binary_target):
@@ -60,8 +63,9 @@ def choose_best_attribute(data_set, attributes, binary_target):
         nn0 = 0
         nn1 = 0
 
-        for ind, value in enumerate(data_set[:, index]):
-            if value == 1:
+        for ind, value in enumerate(data_set):
+
+            if value[index] == 1:
                 if binary_target[ind] == 1:
                     pn1 += 1
                 else:
@@ -72,11 +76,19 @@ def choose_best_attribute(data_set, attributes, binary_target):
                 else:
                     nn0 += 1
 
-        entropy0 = (pn0 + nn0) / (n1 + n0) * get_information_gain(pn0, nn0)
-        entropy1 = (pn1 + nn1) / (n1 + n0) * get_information_gain(pn1, nn1)
+        if pn1 == 0 or nn1 == 0:
+            entropy1 = 0
+        else:
+            entropy1 = (pn1 + nn1) / (n1 + n0) * get_information_gain(pn1, nn1)
+
+        if pn0 == 0 or nn0 == 0:
+            entropy0 = 0
+        else:
+            entropy0 = (pn0 + nn0) / (n1 + n0) * get_information_gain(pn0, nn0)
+
         information_gain.append(entropy - entropy0 - entropy1)
 
-    return list.index(max(information_gain))
+    return information_gain.index(max(information_gain))
 
 def majority_value(binary_targets):
     length = 0
@@ -92,41 +104,56 @@ def majority_value(binary_targets):
 def generate_sub(examples,binary_targets,best_attribute,attribute_state):
     myexamples=[]
     mybinary_targets=[]
-    for ind in enumerate(examples):
+    for ind, val in enumerate(examples):
         if examples[ind][best_attribute]==attribute_state:
             myexamples.append(examples[ind])
             mybinary_targets.append(binary_targets[ind])
     return myexamples,mybinary_targets
 
 # 主要被调用函数
+TREE_NODES=[]
 def DECISION_TREE_LEARNING(examples, attributes, binary_targets):
     target_value=examples_havesamevalue(binary_targets)
-
     if target_value!=-1:
         if target_value==1:
-            return [time.time(),'YES',[]]
+            node = [time.time(), 'YES', []]
+            TREE_NODES.append(node)
+            return node
         else:
-            return [time.time(), 'NO', []]
+            node = [time.time(), 'NO', []]
+            TREE_NODES.append(node)
+            return node
     elif len(attributes)==0:
         ma_value=majority_value(binary_targets)
         if ma_value==1:
-            return [time.time(),'YES',[]]
+            node = [time.time(), 'YES', []]
+            TREE_NODES.append(node)
+            return node
         else:
-            return [time.time(), 'NO', []]
+            node = [time.time(), 'NO', []]
+            TREE_NODES.append(node)
+            return node
     else:
         best_attribute=choose_best_attribute(examples,attributes,binary_targets)
-        tree=[time.time(),str(best_attribute),[]]
+        tree=[time.time(),str(attributes[best_attribute]),[]]
         for attribute_state in [0,1]:
-            name=time.time()
-            tree[2].append(name)
             newexamples,newbinary_targets=generate_sub(examples,binary_targets,best_attribute,attribute_state)
             if len(newexamples)==0:
-                return [time.time(),majority_value(binary_targets),[]]
+                ma_value2 = majority_value(binary_targets)
+                if ma_value2 == 1:
+                    node=[time.time(), 'YES', []]
+                    TREE_NODES.append(node)
+                    return node
+                else:
+                    node = [time.time(), 'NO', []]
+                    TREE_NODES.append(node)
+                    return node
             else:
-                del attributes[best_attribute]
-                del newexamples[:,best_attribute]
-                DECISION_TREE_LEARNING(newexamples,attributes,newbinary_targets)[0]=name
-    tree = 1
+                attributes = attributes[:best_attribute] + attributes[best_attribute + 1:]
+                newexamples = map(lambda x:x[:best_attribute] + x[best_attribute + 1:], newexamples)
+                nextTreeNode=DECISION_TREE_LEARNING(newexamples,attributes,newbinary_targets)
+                tree[2].append(nextTreeNode[0])
+        TREE_NODES.append(tree)
     return tree
 
 if __name__ == "__main__":
@@ -134,12 +161,32 @@ if __name__ == "__main__":
     matfn = u'/home/roland/PycharmProjects/test1/forStudents/cleandata_students.mat'
     data = sio.loadmat(matfn)
     # 45个属性的数据,对应choose_emotion中第一个参数
-    facial_expression = data['y']
+    facial_expression=[]
+    for datay in data['y']:
+        for dy in datay:
+            facial_expression.append(dy)
     # 不同的label,对应examples
-    actions = data['x']
-    target= examples_havesamevalue(choose_emotion(facial_expression,4))
-    print target
-    print len(data['x'][0])
+    examples =[]
+    for ac in data['x']:
+        acx=[]
+        for action in ac:
+            acx.append(action)
+        examples.append(acx)
 
+    # target= examples_havesamevalue(choose_emotion(facial_expression,4))
+    tree=DECISION_TREE_LEARNING(examples,generate_attributes(45),choose_emotion(facial_expression,4))
+    print TREE_NODES
+    # print len(data['x'][0])
 
+[
+[1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+[0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+[0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+[0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0],
+[0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+[0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+[0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1],
+[0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1],
+[0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0]]
 
