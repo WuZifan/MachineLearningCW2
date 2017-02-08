@@ -145,6 +145,8 @@ def DECISION_TREE_LEARNING(examples, attributes, binary_targets):
                     node=[time.time(), 'YES', []]
                     TREE_NODES.append(node)
                     return node
+
+                
                 else:
                     node = [time.time(), 'NO', []]
                     TREE_NODES.append(node)
