@@ -5,8 +5,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import time
 import sys
-
-# from graphviz import Digraph
+import hashlib
+import graphviz
+from graphviz import Digraph
 
 __Author__ = 'Tree_Diagram'
 
@@ -127,36 +128,36 @@ def DECISION_TREE_LEARNING(examples, attributes, binary_targets):
     target_value = examples_havesamevalue(binary_targets)
     if target_value != -1:
         if target_value == 1:
-            node = [time.time(), 'YES', []]
+            node = [hashlib.sha256(str(time.time())).hexdigest(),'YES', []]
             TREE_NODES.append(node)
             return node
         else:
-            node = [time.time(), 'NO', []]
+            node = [hashlib.sha256(str(time.time())).hexdigest(), 'NO', []]
             TREE_NODES.append(node)
             return node
     elif len(attributes) == 0:
         ma_value = majority_value(binary_targets)
         if ma_value == 1:
-            node = [time.time(), 'YES', []]
+            node = [hashlib.sha256(str(time.time())).hexdigest(), 'YES', []]
             TREE_NODES.append(node)
             return node
         else:
-            node = [time.time(), 'NO', []]
+            node = [hashlib.sha256(str(time.time())).hexdigest(), 'NO', []]
             TREE_NODES.append(node)
             return node
     else:
         best_attribute = choose_best_attribute(examples, attributes, binary_targets)
-        tree = [time.time(), str(attributes[best_attribute]), []]
+        tree = [hashlib.sha256(str(time.time())).hexdigest(), str(attributes[best_attribute]), []]
         for attribute_state in [0, 1]:
             newexamples, newbinary_targets = generate_sub(examples, binary_targets, best_attribute, attribute_state)
             if len(newexamples) == 0:
                 ma_value2 = majority_value(binary_targets)
                 if ma_value2 == 1:
-                    node = [time.time(), 'YES', []]
+                    node = [hashlib.sha256(str(time.time())).hexdigest(), 'YES', []]
                     TREE_NODES.append(node)
                     return node
                 else:
-                    node = [time.time(), 'NO', []]
+                    node = [hashlib.sha256(str(time.time())).hexdigest(), 'NO', []]
                     TREE_NODES.append(node)
                     return node
             else:
@@ -167,21 +168,22 @@ def DECISION_TREE_LEARNING(examples, attributes, binary_targets):
         TREE_NODES.append(tree)
     return tree
 
-
-def DrawDecisionTree(label, tree, dot):
+def DrawDecisionTree(nodelabel, tree, dot):
+    item = []
     for node in tree:
-        if node[0] == label:
+        if node[0] == nodelabel:
             item = node
-        break
-    [label, name, leaves] = item
-    dot.node(label, name)
+            break
+    print item
+    [nodelabel, name, leaves]= item
+    dot.node(nodelabel, str(name))
     if len(leaves) == 0:
         pass
     else:
         DrawDecisionTree(leaves[0], tree, dot)
         DrawDecisionTree(leaves[1], tree, dot)
-        dot.edges(label, leaves[0], label='0')
-        dot.edges(label, leaves[1], label='1')
+        dot.edge(nodelabel, leaves[0], label='0',_attributes=None)
+        dot.edge(nodelabel, leaves[1], label='1',_attributes=None)
     return dot
 
 
@@ -244,29 +246,6 @@ def find_label(exam, tree, root):
                     break
             return find_label(exam, tree, tree[next_node_index])
 
-
-def DrawDecisionTree(nodelabel, tree, dot):
-    item = []
-    for node in tree:
-        if node[0] == nodelabel:
-            item = node
-            break
-    print item
-    [nodelabel, name, leaves]= item
-    strnodelabel = "%.19f" % nodelabel
-    dot.node(strnodelabel, str(name))
-    if len(leaves) == 0:
-        pass
-    else:
-        DrawDecisionTree(leaves[0], tree, dot)
-        DrawDecisionTree(leaves[1], tree, dot)
-        strleaves0 = "%.19f" % leaves[0]
-        strleaves1 = "%.19f" % leaves[1]
-        dot.edge(strnodelabel, strleaves0, label='0',_attributes=None)
-        dot.edge(strnodelabel, strleaves1, label='1',_attributes=None)
-    return dot
-
-
 def load_data(path):
     data = sio.loadmat(path)
     facial_expression = topythonlist(data['y'])
@@ -279,14 +258,14 @@ def cross_validation_test(examples, facial_expression):
     global TREE_NODES
     confusion_matrix_final = np.array([0] * 36).reshape(6, 6)
 
-    for inx in range(0, 10):
+    for inx in range(0, 5):
         test_examples = []
         train_examples = []
         test_facial_expression = []
         train_facial_expression = []
         for ind, val in enumerate(examples):
             # 选取10%作为test
-            if ind % 10 == inx:
+            if ind % 5 == inx:
                 # 当选取的test数据越少，其正确越越高
                 test_examples.append(examples[ind])
                 test_facial_expression.append(facial_expression[ind])
@@ -308,11 +287,6 @@ def cross_validation_test(examples, facial_expression):
 
         confusion_matrix = np.array([0] * 36).reshape(6, 6)
 
-        dot = Digraph(comment='')
-        for ind, tree in enumerate(tree_list):
-            print tree[-1]
-            DrawDecisionTree(tree[-1][0], tree, dot)
-            dot.render('test-output/test' + str(ind) + '.gv', view=True)
 
         # Generate confusion matrix
         for ind, val in enumerate(test_label):
@@ -320,8 +294,13 @@ def cross_validation_test(examples, facial_expression):
 
         confusion_matrix_final = np.add(confusion_matrix_final, confusion_matrix)
 
-    return confusion_matrix_final
 
+        for ind, tree in enumerate(tree_list):
+            dot = Digraph(comment='')
+            DrawDecisionTree(tree[-1][0], tree, dot)
+            dot.render('test-output/test' + str(inx)+str(ind) + '.gv', view=True)
+
+    return confusion_matrix_final
 
 def evaluation(confusion_matrix_final):
     average_recall = []
