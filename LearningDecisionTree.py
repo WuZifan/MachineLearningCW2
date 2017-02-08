@@ -4,11 +4,10 @@ import math as mt
 import matplotlib.pyplot as plt
 import numpy as np
 import time
-import graphviz
-from graphviz import Digraph
-from graphviz import Graph
+# from graphviz import Digraph
 
 __Author__ = 'Tree_Diagram'
+
 
 # 将选中的表情设置为1，其他为0,对应binary_targets
 def choose_emotion(facial_expression, emotion):
@@ -20,9 +19,11 @@ def choose_emotion(facial_expression, emotion):
             choosen_emotion.append(0)
     return choosen_emotion
 
+
 # 将属性编号为0到44，对应attributes
 def generate_attributes(num_attributes):
     return range(0, num_attributes)
+
 
 def examples_havesamevalue(binary_targets):
     flag=True
@@ -39,13 +40,14 @@ def examples_havesamevalue(binary_targets):
     else:
         return -1
 
+
 def get_information_gain(p, n):
     pf = float(p)
     nf = float(n)
-    return - pf / (pf + nf) * mt.log10(pf / (pf + nf)) / mt.log10(2) \
-           - nf / (pf + nf) * mt.log10(nf / (pf + nf)) / mt.log10(2)
+    return - pf / (pf + nf) * mt.log(pf / (pf + nf), base=2) \
+           - nf / (pf + nf) * mt.log(nf / (pf + nf), base=2)
 
-#fine
+
 def choose_best_attribute(data_set, attributes, binary_target):
     n0 = 0
     n1 = 0
@@ -67,7 +69,6 @@ def choose_best_attribute(data_set, attributes, binary_target):
         nn1 = 0
 
         for ind, value in enumerate(data_set):
-
             if value[index] == 1:
                 if binary_target[ind] == 1:
                     pn1 += 1
@@ -82,26 +83,31 @@ def choose_best_attribute(data_set, attributes, binary_target):
         if pn1 == 0 or nn1 == 0:
             entropy1 = 0
         else:
-            entropy1 = (pn1 + nn1) / (n1 + n0) * get_information_gain(pn1, nn1)
+            entropy1 = float(pn1 + nn1) / float(n1 + n0) * get_information_gain(pn1, nn1)
 
         if pn0 == 0 or nn0 == 0:
             entropy0 = 0
         else:
-            entropy0 = (pn0 + nn0) / (n1 + n0) * get_information_gain(pn0, nn0)
+            entropy0 = float(pn0 + nn0) / float(n1 + n0) * get_information_gain(pn0, nn0)
 
         information_gain.append(entropy - entropy0 - entropy1)
-
+        print information_gain
+        print "max index " + str(information_gain.index(max(information_gain)))
+        print
     return information_gain.index(max(information_gain))
+
 
 def majority_value(binary_targets):
     length = 0
     for row in binary_targets:
         if row == 1:
             length += 1
+
     if length * 2 >= len(binary_targets):
         return 1
     else:
         return 0
+
 
 def generate_sub(examples,binary_targets,best_attribute,attribute_state):
     myexamples=[]
@@ -113,7 +119,9 @@ def generate_sub(examples,binary_targets,best_attribute,attribute_state):
     return myexamples,mybinary_targets
 
 # 主要被调用函数
-TREE_NODES=[]
+TREE_NODES = []
+
+
 def DECISION_TREE_LEARNING(examples, attributes, binary_targets):
     target_value=examples_havesamevalue(binary_targets)
     if target_value!=-1:
@@ -158,51 +166,90 @@ def DECISION_TREE_LEARNING(examples, attributes, binary_targets):
         TREE_NODES.append(tree)
     return tree
 
-def DrawDecisionTree(nodelabel, tree, dot):
-    item = []
+
+def DrawDecisionTree(label, tree, dot):
     for node in tree:
-        if node[0] == nodelabel:
+        if node[0] == label:
             item = node
-            break
-    print item
-    [nodelabel, name, leaves]= item
-    strnodelabel = "%.19f" % nodelabel
-    dot.node(strnodelabel, str(name))
+        break
+    [label, name, leaves]= item
+    dot.node(label, name)
     if len(leaves) == 0:
         pass
     else:
         DrawDecisionTree(leaves[0], tree, dot)
         DrawDecisionTree(leaves[1], tree, dot)
-        strleaves0 = "%.19f" % leaves[0]
-        strleaves1 = "%.19f" % leaves[1]
-        dot.edge(strnodelabel, strleaves0,label='0',_attributes=None)
-        dot.edge(strnodelabel, strleaves1,label='1',_attributes=None)
+        dot.edges(label, leaves[0], label='0')
+        dot.edges(label, leaves[1], label='1')
     return dot
+
+
+def topythonlist(data):
+    mylist=[]
+    for d in data:
+        for dd in d:
+            mylist.append(dd)
+    return mylist
+
+
+def topythonnestedlist(data):
+    mynestedlist=[]
+    for da in data:
+        mylist=[]
+        for dda in da:
+            mylist.append(dda)
+        mynestedlist.append(mylist)
+    return mynestedlist
 
 if __name__ == "__main__":
     # 导入数据
-    matfn = u'/Users/FangweiXU/Desktop/forStudents/cleandata_students.mat'
+    matfn = u'/home/roland/PycharmProjects/test1/forStudents/cleandata_students.mat'
+    matfn2= u'/home/roland/PycharmProjects/test1/forStudents/noisydata_students.mat'
     data = sio.loadmat(matfn)
-    # 45个属性的数据,对应choose_emotion中第一个参数
-    facial_expression=[]
-    for datay in data['y']:
-        for dy in datay:
-            facial_expression.append(dy)
-    # 不同的label,对应examples
-    examples =[]
-    for ac in data['x']:
-        acx=[]
-        for action in ac:
-            acx.append(action)
-        examples.append(acx)
+    noisydata=sio.loadmat(matfn2)
 
-    # target= examples_havesamevalue(choose_emotion(facial_expression,4))
-    DECISION_TREE_LEARNING(examples,generate_attributes(45),choose_emotion(facial_expression,4))
-    label=TREE_NODES[-1][0]
-    print str(1486233300.071725)
-    dot = Digraph(comment='the test')
-    dot
-    DrawDecisionTree(label, TREE_NODES, dot)
-    dot.view('test-output/test.gv')
-    'test-output/test.gv.pdf'
+    # 45个属性的数据,对应choose_emotion中第一个参数
+    facial_expression=topythonlist(data['y'])
+
+    # 45个属性的数据,对应choose_emotion中第一个参数,for noisy
+    no_facial_expression=topythonlist(noisydata['y'])
+
+    # 不同的label,对应examples
+    examples =topythonnestedlist(data['x'])
+
+    # 不同的label,对应examples,for noisy
+    noisyexample=topythonnestedlist(noisydata['x'])
+
+    # for attribute
+    attributes=generate_attributes(45)
+
+    # for clean TREE
+    TREELIST = []
+    for x in range(1,11):
+        for j in range(1,7):
+            # for binary_targets
+            binary_targets = choose_emotion(facial_expression, j)
+            DECISION_TREE_LEARNING(examples[x::10],attributes,binary_targets[x::10])
+            TREELIST.append(TREE_NODES)
+            TREE_NODES=[]
+
+    for tree in TREELIST:
+        print tree
+
+    print 'noisy'
+
+    # for noisy TREE
+    NOISYTREELIST=[]
+    for x in range(1,11):
+        for j in range(1,7):
+            # for binary_targets
+            binary_targets = choose_emotion(no_facial_expression, j)
+            DECISION_TREE_LEARNING(noisyexample[x::10],attributes,binary_targets[x::10])
+            NOISYTREELIST.append(TREE_NODES)
+            TREE_NODES=[]
+
+    for tree in NOISYTREELIST:
+        print tree
     # print len(data['x'][0])
+
+
