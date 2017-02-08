@@ -48,10 +48,6 @@ def get_information_gain(p, n):
 def choose_best_attribute(data_set, attributes, binary_target):
     n0 = 0
     n1 = 0
-    print "me"
-    print len(attributes)
-    print len(data_set[0])
-    print "me"
     information_gain = []
     for value in binary_target:
         if value == 1:
@@ -92,9 +88,6 @@ def choose_best_attribute(data_set, attributes, binary_target):
             entropy0 = float(pn0 + nn0) / float(n1 + n0) * get_information_gain(pn0, nn0)
 
         information_gain.append(entropy - entropy0 - entropy1)
-
-    print "info " + str(information_gain.index(max(information_gain)))
-    print len(information_gain)
 
     return information_gain.index(max(information_gain))
 
@@ -144,10 +137,6 @@ def DECISION_TREE_LEARNING(examples, attributes, binary_targets):
             return node
     else:
         best_attribute=choose_best_attribute(examples,attributes,binary_targets)
-        print "best " + str(best_attribute)
-        print attributes
-        print len(attributes)
-        print
         tree=[time.time(),str(attributes[best_attribute]),[]]
         for attribute_state in [0,1]:
             newexamples,newbinary_targets=generate_sub(examples,binary_targets,best_attribute,attribute_state)
@@ -244,7 +233,7 @@ def find_labbel(exam,tree,root):
 if __name__ == "__main__":
     # 导入数据
     matfn = u'cleandata_students.mat'
-    matfn = u'noisydata_students.mat'
+    #matfn = u'noisydata_students.mat'
 
     data = sio.loadmat(matfn)
 
@@ -257,70 +246,60 @@ if __name__ == "__main__":
     # for attribute
     attributes = generate_attributes(45)
 
-    test_examples = []
-    train_examples = []
+    for inx in range(0,10):
+        test_examples = []
+        train_examples = []
+        test_facial_expression = []
+        train_facial_expression = []
+        for ind, val in enumerate(examples):
+            # 选取10%作为test
+            if ind % 10 == inx: #当选取的test数据越少，其正确越越高
+                test_examples.append(examples[ind])
+                test_facial_expression.append(facial_expression[ind])
+            else:
+                train_examples.append(examples[ind])
+                train_facial_expression.append(facial_expression[ind])
 
-    test_facial_expression = []
-    train_facial_expression = []
+        # for clean TREE
+        tree_list = []
 
-    for ind, val in enumerate(examples):
-        # 选取20%作为test
-        if ind % 5 == 0:
-            test_examples.append(examples[ind])
-            test_facial_expression.append(facial_expression[ind])
-        else:
-            train_examples.append(examples[ind])
-            train_facial_expression.append(facial_expression[ind])
+        for j in range(1, 7):
+            # for binary_targets
+            binary_targets = choose_emotion(train_facial_expression, j)
+            DECISION_TREE_LEARNING(train_examples, attributes, binary_targets)
+            tree_list.append(TREE_NODES)
+            TREE_NODES = []
 
-    # for clean TREE
-    tree_list = []
+        test_label = predictions(tree_list, test_examples)
 
-    for j in range(1, 7):
-        # for binary_targets
-        binary_targets = choose_emotion(train_facial_expression, j)
-        DECISION_TREE_LEARNING(train_examples, attributes, binary_targets)
-        tree_list.append(TREE_NODES)
-        TREE_NODES = []
+        confusion_matrix = np.array([0] * 36).reshape(6, 6)
 
-    test_label = predictions(tree_list, test_examples)
+        # Generate confusion matrix
+        for ind, val in enumerate(test_label):
+            confusion_matrix[test_facial_expression[ind] - 1, val - 1] += 1
 
+        average_recall = []
+        average_precision_rate = []
 
-    print test_label
-    print len(test_label)
-    print test_facial_expression
-    print len(test_facial_expression)
+        for goal in xrange(6):
+            average_recall.append(float(confusion_matrix[goal, goal]) / float(confusion_matrix[goal].sum()))
+            average_precision_rate.append(float(confusion_matrix[goal, goal]) / float(confusion_matrix[:, goal].sum()))
 
-    confusion_matrix = np.array([0] * 36).reshape(6, 6)
+        f1_measures = []
+        correct_times = 0
 
-    # Generate confusion matrix
-    for ind, val in enumerate(test_label):
-        confusion_matrix[test_facial_expression[ind] - 1, val - 1] += 1
-
-    print
-    print confusion_matrix
-    print
-    average_recall = []
-    average_precision_rate = []
-
-    for goal in xrange(6):
-        average_recall.append(float(confusion_matrix[goal, goal]) / float(confusion_matrix[goal].sum()))
-        average_precision_rate.append(float(confusion_matrix[goal, goal]) / float(confusion_matrix[:, goal].sum()))
-
-    f1_measures = []
-    correct_times = 0
-
-    for goal in xrange(6):
-        f1_measures.append(2 * average_recall[goal] * average_precision_rate[goal] /
-                           float(average_precision_rate[goal] + average_recall[goal]))
-        correct_times += confusion_matrix[goal, goal]
+        for goal in xrange(6):
+            f1_measures.append(2 * average_recall[goal] * average_precision_rate[goal] /
+                               float(average_precision_rate[goal] + average_recall[goal]))
+            correct_times += confusion_matrix[goal, goal]
 
 
-    average_classification_rate = float(correct_times) / float(confusion_matrix.sum())
+        average_classification_rate = float(correct_times) / float(confusion_matrix.sum())
 
-    print average_recall
-    print average_precision_rate
-    print f1_measures
-    print average_classification_rate
+        print average_recall
+        print average_precision_rate
+        print f1_measures
+        print average_classification_rate
 
 
 
