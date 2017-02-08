@@ -214,9 +214,9 @@ def predictions(TreeList, testData):
                 myfalg = True
                 labbel.append(ind + 1)
                 break
-        if myfalg == False:
+        if myfalg== False:
             labbel.append(-1)
-        myfalg = False
+        myfalg=False
     return labbel;
 
 # 预测函数,带深度
@@ -253,21 +253,21 @@ def find_labbel(exam, tree, root):
     elif root[1] == 'NO':
         return (0,1)
     else:
-        attribute_num = int(root[1])
-        real_au = exam[attribute_num]
-        if real_au == 0:
-            next_node_index = 0;
-            for ind, node in enumerate(tree):
-                if node[0] == root[2][0]:
-                    next_node_index = ind
+        attribute_num=int(root[1])
+        real_au=exam[attribute_num]
+        if real_au==0:
+            next_node_index=0;
+            for ind,node in enumerate(tree):
+                if node[0]==root[2][0]:
+                    next_node_index=ind
                     break
             flag_label,deepth=find_labbel(exam, tree, tree[next_node_index])
             return (flag_label,deepth+1)
         else:
-            next_node_index = 0;
-            for ind, node in enumerate(tree):
-                if node[0] == root[2][1]:
-                    next_node_index = ind
+            next_node_index=0;
+            for ind,node in enumerate(tree):
+                if node[0]==root[2][1]:
+                    next_node_index=ind
                     break
             flag_label, deepth = find_labbel(exam, tree, tree[next_node_index])
             return (flag_label, deepth + 1)
@@ -288,6 +288,8 @@ if __name__ == "__main__":
 
     # for attribute
     attributes = generate_attributes(45)
+
+    confusion_matrix_final = np.array([0] * 36).reshape(6, 6)
 
     for inx in range(0, 10):
         test_examples = []
@@ -322,25 +324,27 @@ if __name__ == "__main__":
         for ind, val in enumerate(test_label):
             confusion_matrix[test_facial_expression[ind] - 1, val - 1] += 1
 
-        average_recall = []
-        average_precision_rate = []
+        confusion_matrix_final = np.add(confusion_matrix_final, confusion_matrix)
 
-        for goal in xrange(6):
-            average_recall.append(float(confusion_matrix[goal, goal]) / float(confusion_matrix[goal].sum()))
-            average_precision_rate.append(float(confusion_matrix[goal, goal]) / float(confusion_matrix[:, goal].sum()))
+    average_recall = []
+    average_precision_rate = []
 
-        f1_measures = []
-        correct_times = 0
+    for goal in xrange(6):
+        average_recall.append(float(confusion_matrix_final[goal, goal]) / float(confusion_matrix_final[goal].sum()))
+        average_precision_rate.append(
+            float(confusion_matrix_final[goal, goal]) / float(confusion_matrix_final[:, goal].sum()))
 
-        for goal in xrange(6):
-            f1_measures.append(2 * average_recall[goal] * average_precision_rate[goal] /
-                               float(average_precision_rate[goal] + average_recall[goal]))
-            correct_times += confusion_matrix[goal, goal]
+    f1_measures = []
+    correct_times = 0
 
-        average_classification_rate = float(correct_times) / float(confusion_matrix.sum())
+    for goal in xrange(6):
+        f1_measures.append(2 * average_recall[goal] * average_precision_rate[goal] /
+                           float(average_precision_rate[goal] + average_recall[goal]))
+        correct_times += confusion_matrix_final[goal, goal]
 
-        print confusion_matrix
-        print average_recall
-        print average_precision_rate
-        print f1_measures
-        print average_classification_rate
+    average_classification_rate = float(correct_times) / float(confusion_matrix_final.sum())
+
+    print average_recall
+    print average_precision_rate
+    print f1_measures
+    print average_classification_rate
