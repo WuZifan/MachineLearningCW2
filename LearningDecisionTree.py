@@ -4,7 +4,9 @@ import math as mt
 import matplotlib.pyplot as plt
 import numpy as np
 import time
-# from graphviz import Digraph
+import graphviz
+from graphviz import Digraph
+from graphviz import Graph
 
 __Author__ = 'Tree_Diagram'
 
@@ -95,8 +97,7 @@ def majority_value(binary_targets):
     length = 0
     for row in binary_targets:
         if row == 1:
-            length = length + 1
-
+            length += 1
     if length * 2 >= len(binary_targets):
         return 1
     else:
@@ -157,87 +158,51 @@ def DECISION_TREE_LEARNING(examples, attributes, binary_targets):
         TREE_NODES.append(tree)
     return tree
 
-def DrawDecisionTree(label, tree, dot):
+def DrawDecisionTree(nodelabel, tree, dot):
+    item = []
     for node in tree:
-        if node[0] == label:
+        if node[0] == nodelabel:
             item = node
-        break
-    [label, name, leaves]= item
-    dot.node(label, name)
+            break
+    print item
+    [nodelabel, name, leaves]= item
+    strnodelabel = "%.19f" % nodelabel
+    dot.node(strnodelabel, str(name))
     if len(leaves) == 0:
         pass
     else:
         DrawDecisionTree(leaves[0], tree, dot)
         DrawDecisionTree(leaves[1], tree, dot)
-        dot.edges(label, leaves[0], label='0')
-        dot.edges(label, leaves[1], label='1')
+        strleaves0 = "%.19f" % leaves[0]
+        strleaves1 = "%.19f" % leaves[1]
+        dot.edge(strnodelabel, strleaves0,label='0',_attributes=None)
+        dot.edge(strnodelabel, strleaves1,label='1',_attributes=None)
     return dot
-
-def topythonlist(data):
-    mylist=[]
-    for d in data:
-        for dd in d:
-            mylist.append(dd)
-    return mylist
-
-def topythonnestedlist(data):
-    mynestedlist=[]
-    for da in data:
-        mylist=[]
-        for dda in da:
-            mylist.append(dda)
-        mynestedlist.append(mylist)
-    return mynestedlist
 
 if __name__ == "__main__":
     # 导入数据
-    matfn = u'/home/roland/PycharmProjects/test1/forStudents/cleandata_students.mat'
-    matfn2= u'/home/roland/PycharmProjects/test1/forStudents/noisydata_students.mat'
+    matfn = u'/Users/FangweiXU/Desktop/forStudents/cleandata_students.mat'
     data = sio.loadmat(matfn)
-    noisydata=sio.loadmat(matfn2)
-
     # 45个属性的数据,对应choose_emotion中第一个参数
-    facial_expression=topythonlist(data['y'])
-
-    # 45个属性的数据,对应choose_emotion中第一个参数,for noisy
-    no_facial_expression=topythonlist(noisydata['y'])
-
+    facial_expression=[]
+    for datay in data['y']:
+        for dy in datay:
+            facial_expression.append(dy)
     # 不同的label,对应examples
-    examples =topythonnestedlist(data['x'])
+    examples =[]
+    for ac in data['x']:
+        acx=[]
+        for action in ac:
+            acx.append(action)
+        examples.append(acx)
 
-    # 不同的label,对应examples,for noisy
-    noisyexample=topythonnestedlist(noisydata['x'])
-
-    # for attribute
-    attributes=generate_attributes(45)
-
-    # for clean TREE
-    TREELIST = []
-    for x in range(1,11):
-        for j in range(1,7):
-            # for binary_targets
-            binary_targets = choose_emotion(facial_expression, j)
-            DECISION_TREE_LEARNING(examples[x::10],attributes,binary_targets[x::10])
-            TREELIST.append(TREE_NODES)
-            TREE_NODES=[]
-
-    for tree in TREELIST:
-        print tree
-
-    print 'noisy'
-
-    # for noisy TREE
-    NOISYTREELIST=[]
-    for x in range(1,11):
-        for j in range(1,7):
-            # for binary_targets
-            binary_targets = choose_emotion(no_facial_expression, j)
-            DECISION_TREE_LEARNING(noisyexample[x::10],attributes,binary_targets[x::10])
-            NOISYTREELIST.append(TREE_NODES)
-            TREE_NODES=[]
-
-    for tree in NOISYTREELIST:
-        print tree
+    # target= examples_havesamevalue(choose_emotion(facial_expression,4))
+    DECISION_TREE_LEARNING(examples,generate_attributes(45),choose_emotion(facial_expression,4))
+    label=TREE_NODES[-1][0]
+    print str(1486233300.071725)
+    dot = Digraph(comment='the test')
+    dot
+    DrawDecisionTree(label, TREE_NODES, dot)
+    dot.view('test-output/test.gv')
+    'test-output/test.gv.pdf'
     # print len(data['x'][0])
-
-
