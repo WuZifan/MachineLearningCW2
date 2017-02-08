@@ -167,15 +167,12 @@ def DECISION_TREE_LEARNING(examples, attributes, binary_targets):
         TREE_NODES.append(tree)
     return tree
 
-
-
-
 def DrawDecisionTree(nodelabel, tree, dot):
     item = []
     for node in tree:
         if node[0] == nodelabel:
             item = node
-        break
+            break
     print item
     [nodelabel, name, leaves]= item
     strnodelabel ="%.19f" % nodelabel
