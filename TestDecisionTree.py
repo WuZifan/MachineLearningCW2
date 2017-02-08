@@ -296,6 +296,7 @@ if __name__ == "__main__":
 
         average_classification_rate = float(correct_times) / float(confusion_matrix.sum())
 
+        print confusion_matrix
         print average_recall
         print average_precision_rate
         print f1_measures
