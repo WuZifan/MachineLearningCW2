@@ -80,15 +80,14 @@ def choose_best_attribute(data_set, attributes, binary_target):
         if pn1 == 0 or nn1 == 0:
             entropy1 = 0
         else:
-            entropy1 = (pn1 + nn1) / (n1 + n0) * get_information_gain(pn1, nn1)
+            entropy1 = float(pn1 + nn1) / (n1 + n0) * get_information_gain(pn1, nn1)
 
         if pn0 == 0 or nn0 == 0:
             entropy0 = 0
         else:
-            entropy0 = (pn0 + nn0) / (n1 + n0) * get_information_gain(pn0, nn0)
+            entropy0 = float(pn0 + nn0) / (n1 + n0) * get_information_gain(pn0, nn0)
 
         information_gain.append(entropy - entropy0 - entropy1)
-
     return information_gain.index(max(information_gain))
 
 def majority_value(binary_targets):
@@ -150,9 +149,9 @@ def DECISION_TREE_LEARNING(examples, attributes, binary_targets):
                     TREE_NODES.append(node)
                     return node
             else:
-                attributes = attributes[:best_attribute] + attributes[best_attribute + 1:]
+                newattributes = attributes[:best_attribute] + attributes[best_attribute + 1:]
                 newexamples = map(lambda x:x[:best_attribute] + x[best_attribute + 1:], newexamples)
-                nextTreeNode=DECISION_TREE_LEARNING(newexamples,attributes,newbinary_targets)
+                nextTreeNode=DECISION_TREE_LEARNING(newexamples,newattributes,newbinary_targets)
                 tree[2].append(nextTreeNode[0])
         TREE_NODES.append(tree)
     return tree
