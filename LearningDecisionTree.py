@@ -167,6 +167,8 @@ def DECISION_TREE_LEARNING(examples, attributes, binary_targets):
     return tree
 
 
+
+
 def DrawDecisionTree(label, tree, dot):
     for node in tree:
         if node[0] == label:
