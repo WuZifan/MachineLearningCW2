@@ -275,8 +275,8 @@ def find_labbel(exam, tree, root):
 
 if __name__ == "__main__":
     # 导入数据
-    matfn = u'cleandata_students.mat'
-    # matfn = u'noisydata_students.mat'
+    #matfn = u'cleandata_students.mat'
+    matfn = u'noisydata_students.mat'
 
     data = sio.loadmat(matfn)
 
@@ -315,8 +315,8 @@ if __name__ == "__main__":
             tree_list.append(TREE_NODES)
             TREE_NODES = []
 
-       # test_label = predictions_deepth(tree_list, test_examples)
-        test_label = predictions(tree_list, test_examples)
+        test_label = predictions_deepth(tree_list, test_examples)
+        #test_label = predictions(tree_list, test_examples)
 
         confusion_matrix = np.array([0] * 36).reshape(6, 6)
 
