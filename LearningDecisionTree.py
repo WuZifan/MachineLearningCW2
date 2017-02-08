@@ -178,7 +178,7 @@ def DrawDecisionTree(nodelabel, tree, dot):
     print item
     [nodelabel, name, leaves]= item
     strnodelabel ="%.19f" % nodelabel
-    dot.node(nodelabel, name)
+    dot.node(strnodelabel, name)
     if len(leaves) == 0:
         pass
     else:
@@ -186,8 +186,8 @@ def DrawDecisionTree(nodelabel, tree, dot):
         DrawDecisionTree(leaves[1], tree, dot)
         strleaves0 ="%.19f" % leaves[0]
         strleaves1 ="%.19f" % leaves[1]
-        dot.edges(strnodelabel, strleaves0, label='0',_attributes=None)
-        dot.edges(strnodelabel, strleaves1, label='1',_attributes=None)
+        dot.edge(strnodelabel, strleaves0, label='0',_attributes=None)
+        dot.edge(strnodelabel, strleaves1, label='1',_attributes=None)
     return dot
 
 def topythonlist(data):
@@ -209,8 +209,8 @@ def topythonnestedlist(data):
 
 if __name__ == "__main__":
     # 导入数据
-    matfn = u'/home/roland/PycharmProjects/test1/forStudents/cleandata_students.mat'
-    matfn2= u'/home/roland/PycharmProjects/test1/forStudents/noisydata_students.mat'
+    matfn = u'cleandata_students.mat'
+    matfn2= u'noisydata_students.mat'
     data = sio.loadmat(matfn)
     noisydata=sio.loadmat(matfn2)
 
@@ -260,6 +260,7 @@ if __name__ == "__main__":
     test_labbel = TestDecisionTree.predictions(TREELIST, test_examples)
     print test_labbel
     print len(test_labbel)
+    dot = Digraph(comment='')
     DrawDecisionTree(tree[-1][1],tree,dot)
     dot.render('test.gv',view=True)
     # print len(data['x'][0])
