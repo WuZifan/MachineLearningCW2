@@ -4,7 +4,8 @@ import math as mt
 import matplotlib.pyplot as plt
 import numpy as np
 import time
-# from graphviz import Digraph
+import graphviz
+from graphviz import Digraph
 
 __Author__ = 'Tree_Diagram'
 
@@ -169,20 +170,25 @@ def DECISION_TREE_LEARNING(examples, attributes, binary_targets):
 
 
 
-def DrawDecisionTree(label, tree, dot):
+def DrawDecisionTree(nodelabel, tree, dot):
+    item = []
     for node in tree:
-        if node[0] == label:
+        if node[0] == nodelabel:
             item = node
         break
-    [label, name, leaves]= item
-    dot.node(label, name)
+    print item
+    [nodelabel, name, leaves]= item
+    strnodelabel ="%.19f" % nodelabel
+    dot.node(nodelabel, name)
     if len(leaves) == 0:
         pass
     else:
         DrawDecisionTree(leaves[0], tree, dot)
         DrawDecisionTree(leaves[1], tree, dot)
-        dot.edges(label, leaves[0], label='0')
-        dot.edges(label, leaves[1], label='1')
+        strleaves0 ="%.19f" % leaves[0]
+        strleaves1 ="%.19f" % leaves[1]
+        dot.edges(strnodelabel, strleaves0, label='0',_attributes=None)
+        dot.edges(strnodelabel, strleaves1, label='1',_attributes=None)
     return dot
 
 
@@ -252,6 +258,10 @@ if __name__ == "__main__":
 
     for tree in NOISYTREELIST:
         print tree
+
+    test_labbel = TestDecisionTree.predictions(TREELIST, test_examples)
+    print test_labbel
+    print len(test_labbel)
     # print len(data['x'][0])
 
 
