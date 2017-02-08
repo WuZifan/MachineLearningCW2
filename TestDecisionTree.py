@@ -4,9 +4,9 @@ import math as mt
 import matplotlib.pyplot as plt
 import numpy as np
 import time
-from graphviz import Digraph
-import graphviz
-from graphviz import Digraph
+import sys
+
+# from graphviz import Digraph
 
 __Author__ = 'Tree_Diagram'
 
@@ -24,7 +24,7 @@ def choose_emotion(facial_expression, emotion):
 
 # 将属性编号为0到44，对应attributes
 def generate_attributes(num_attributes):
-    return range(0, num_attributes)
+    return range(1, num_attributes + 1)
 
 
 def examples_havesamevalue(binary_targets):
@@ -210,7 +210,7 @@ def predictions(TreeList, testData):
     for exam in testData:
         for ind, tree in enumerate(TreeList):
             root = tree[-1]
-            flag = find_labbel(exam, tree, root)
+            flag = find_label(exam, tree, root)
             if flag == 1:
                 myfalg = True
                 labbel.append(ind + 1)
@@ -221,13 +221,13 @@ def predictions(TreeList, testData):
     return labbel;
 
 
-def find_labbel(exam, tree, root):
+def find_label(exam, tree, root):
     if root[1] == 'YES':
         return 1
     elif root[1] == 'NO':
         return 0
     else:
-        attribute_num = int(root[1])
+        attribute_num = int(root[1]) - 1
         real_au = exam[attribute_num]
         if real_au == 0:
             next_node_index = 0;
@@ -235,14 +235,14 @@ def find_labbel(exam, tree, root):
                 if node[0] == root[2][0]:
                     next_node_index = ind
                     break
-            return find_labbel(exam, tree, tree[next_node_index])
+            return find_label(exam, tree, tree[next_node_index])
         else:
             next_node_index = 0;
             for ind, node in enumerate(tree):
                 if node[0] == root[2][1]:
                     next_node_index = ind
                     break
-            return find_labbel(exam, tree, tree[next_node_index])
+            return find_label(exam, tree, tree[next_node_index])
 
 
 def DrawDecisionTree(nodelabel, tree, dot):
@@ -267,22 +267,16 @@ def DrawDecisionTree(nodelabel, tree, dot):
     return dot
 
 
-if __name__ == "__main__":
-    # 导入数据
-    matfn = u'cleandata_students.mat'
-    # matfn = u'noisydata_students.mat'
-
-    data = sio.loadmat(matfn)
-
-    # 45个属性的数据,对应choose_emotion中第一个参数
+def load_data(path):
+    data = sio.loadmat(path)
     facial_expression = topythonlist(data['y'])
-
-    # 不同的label,对应examples
     examples = topythonnestedlist(data['x'])
 
-    # for attribute
-    attributes = generate_attributes(45)
+    return facial_expression, examples
 
+
+def cross_validation_test(examples, facial_expression):
+    global TREE_NODES
     confusion_matrix_final = np.array([0] * 36).reshape(6, 6)
 
     for inx in range(0, 10):
@@ -314,30 +308,89 @@ if __name__ == "__main__":
 
         confusion_matrix = np.array([0] * 36).reshape(6, 6)
 
+        dot = Digraph(comment='')
+        for ind, tree in enumerate(tree_list):
+            print tree[-1]
+            DrawDecisionTree(tree[-1][0], tree, dot)
+            dot.render('test-output/test' + str(ind) + '.gv', view=True)
+
         # Generate confusion matrix
         for ind, val in enumerate(test_label):
             confusion_matrix[test_facial_expression[ind] - 1, val - 1] += 1
 
         confusion_matrix_final = np.add(confusion_matrix_final, confusion_matrix)
-        average_recall = []
-        average_precision_rate = []
 
-        for goal in xrange(6):
-            average_recall.append(float(confusion_matrix[goal, goal]) / float(confusion_matrix[goal].sum()))
-            average_precision_rate.append(float(confusion_matrix[goal, goal]) / float(confusion_matrix[:, goal].sum()))
+    return confusion_matrix_final
 
-        f1_measures = []
-        correct_times = 0
 
-        for goal in xrange(6):
-            f1_measures.append(2 * average_recall[goal] * average_precision_rate[goal] /
-                               float(average_precision_rate[goal] + average_recall[goal]))
-            correct_times += confusion_matrix[goal, goal]
+def evaluation(confusion_matrix_final):
+    average_recall = []
+    average_precision_rate = []
 
-        average_classification_rate = float(correct_times) / float(confusion_matrix.sum())
+    for goal in xrange(6):
+        average_recall.append(float(confusion_matrix_final[goal, goal]) / float(confusion_matrix_final[goal].sum()))
+        average_precision_rate.append(
+            float(confusion_matrix_final[goal, goal]) / float(confusion_matrix_final[:, goal].sum()))
 
-        dot = Digraph(comment='')
-        for ind, tree in enumerate(tree_list):
-            print tree[-1]
-            DrawDecisionTree(tree[-1][0],tree, dot)
-            dot.render('test-output/test' + str(ind) + '.gv', view=True)
+    f1_measures = []
+    correct_times = 0
+
+    for goal in xrange(6):
+        f1_measures.append(2 * average_recall[goal] * average_precision_rate[goal] /
+                           float(average_precision_rate[goal] + average_recall[goal]))
+        correct_times += confusion_matrix_final[goal, goal]
+
+    average_classification_rate = float(correct_times) / float(confusion_matrix_final.sum())
+
+    print "average_recall rate: "
+    print average_recall
+    print "average_precision_rate: "
+    print average_precision_rate
+    print "f1 measure: "
+    print f1_measures
+    print "average classification rate: "
+    print average_classification_rate
+
+
+if __name__ == "__main__":
+    # 导入数据
+    path1 = u'cleandata_students.mat'
+    path2 = u'noisydata_students.mat'
+
+    if len(sys.argv) == 1:
+        print "Empty input"
+        exit(1)
+
+    source = sys.argv[1:]
+
+    # for attribute
+    attributes = generate_attributes(45)
+
+    for ind, path in enumerate(source):
+        facial_expression, example = load_data(path)
+        print "For %dth input file %s : " % (ind + 1, path)
+        res = cross_validation_test(example, facial_expression)
+        print "Cross Validation matrix:"
+        print res
+        print "evaluate result: "
+        evaluation(res)
+        print
+
+
+    # # 45个属性的数据,对应choose_emotion中第一个参数
+    # facial_expression1, examples1 = load_data(path1)
+    # facial_expression2, examples2 = load_data(path2)
+    #
+    # print "For clean data:"
+    # res = cross_validation_test(examples1, facial_expression1)
+    # print "Cross Validation matrix:"
+    # print res
+    # print "evaluate result: "
+    # evaluation(res)
+    #
+    # print "For noisy data:"
+    # res = cross_validation_test(examples2, facial_expression2)
+    # print "Cross Validation matrix:"
+    # print res
+    # print "evaluate result: "
+    # evaluation(res)
