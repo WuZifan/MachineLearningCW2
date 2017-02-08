@@ -155,7 +155,6 @@ def DECISION_TREE_LEARNING(examples, attributes, binary_targets):
                 if ma_value2 == 1:
                     node=[time.time(), 'YES', []]
                     TREE_NODES.append(node)
-
                     return node
                 else:
                     node = [time.time(), 'NO', []]
