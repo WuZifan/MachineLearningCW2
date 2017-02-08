@@ -37,16 +37,21 @@ def examples_havesamevalue(binary_targets):
     else:
         return -1
 
+
 def get_information_gain(p, n):
     pf = float(p)
     nf = float(n)
-    return - pf / (pf + nf) * mt.log10(pf / (pf + nf)) / mt.log10(2) \
-           - nf / (pf + nf) * mt.log10(nf / (pf + nf)) / mt.log10(2)
+    return - pf / (pf + nf) * mt.log(pf / (pf + nf), 2) \
+           - nf / (pf + nf) * mt.log(nf / (pf + nf), 2)
 
-#fine
+
 def choose_best_attribute(data_set, attributes, binary_target):
     n0 = 0
     n1 = 0
+    print "me"
+    print len(attributes)
+    print len(data_set[0])
+    print "me"
     information_gain = []
     for value in binary_target:
         if value == 1:
@@ -65,7 +70,6 @@ def choose_best_attribute(data_set, attributes, binary_target):
         nn1 = 0
 
         for ind, value in enumerate(data_set):
-
             if value[index] == 1:
                 if binary_target[ind] == 1:
                     pn1 += 1
@@ -80,16 +84,20 @@ def choose_best_attribute(data_set, attributes, binary_target):
         if pn1 == 0 or nn1 == 0:
             entropy1 = 0
         else:
-            entropy1 = float(pn1 + nn1) / (n1 + n0) * get_information_gain(pn1, nn1)
+            entropy1 = float(pn1 + nn1) / float(n1 + n0) * get_information_gain(pn1, nn1)
 
         if pn0 == 0 or nn0 == 0:
             entropy0 = 0
         else:
-            entropy0 = float(pn0 + nn0) / (n1 + n0) * get_information_gain(pn0, nn0)
+            entropy0 = float(pn0 + nn0) / float(n1 + n0) * get_information_gain(pn0, nn0)
 
         information_gain.append(entropy - entropy0 - entropy1)
 
+    print "info " + str(information_gain.index(max(information_gain)))
+    print len(information_gain)
+
     return information_gain.index(max(information_gain))
+
 
 def majority_value(binary_targets):
     length = 0
@@ -136,6 +144,10 @@ def DECISION_TREE_LEARNING(examples, attributes, binary_targets):
             return node
     else:
         best_attribute=choose_best_attribute(examples,attributes,binary_targets)
+        print "best " + str(best_attribute)
+        print attributes
+        print len(attributes)
+        print
         tree=[time.time(),str(attributes[best_attribute]),[]]
         for attribute_state in [0,1]:
             newexamples,newbinary_targets=generate_sub(examples,binary_targets,best_attribute,attribute_state)
@@ -151,7 +163,7 @@ def DECISION_TREE_LEARNING(examples, attributes, binary_targets):
                     return node
             else:
                 newattributes = attributes[:best_attribute] + attributes[best_attribute + 1:]
-                newexamples = map(lambda x:x[:best_attribute] + x[best_attribute + 1:], newexamples)
+                newexamples = map(lambda x: x[:best_attribute] + x[best_attribute + 1:], newexamples)
                 nextTreeNode=DECISION_TREE_LEARNING(newexamples,newattributes,newbinary_targets)
                 tree[2].append(nextTreeNode[0])
         TREE_NODES.append(tree)
@@ -192,18 +204,18 @@ def topythonnestedlist(data):
 # 预测函数
 def predictions(TreeList,testData):
     labbel=[]
-    myflag=False
+    myfalg=False
     for exam in testData:
         for ind,tree in enumerate(TreeList):
             root=tree[-1]
             flag=find_labbel(exam,tree,root)
             if flag==1:
-                myflag=True
+                myfalg=True
                 labbel.append(ind+1)
                 break
-        if myflag==False:
+        if myfalg== False:
             labbel.append(-1)
-        myflag=False
+        myfalg=False
     return labbel;
 
 def find_labbel(exam,tree,root):
@@ -231,52 +243,87 @@ def find_labbel(exam,tree,root):
 
 if __name__ == "__main__":
     # 导入数据
-    matfn = u'/home/roland/PycharmProjects/test1/forStudents/cleandata_students.mat'
+    matfn = u'cleandata_students.mat'
+    matfn = u'noisydata_students.mat'
+
     data = sio.loadmat(matfn)
 
-
     # 45个属性的数据,对应choose_emotion中第一个参数
-    facial_expression=topythonlist(data['y'])
+    facial_expression = topythonlist(data['y'])
 
     # 不同的label,对应examples
-    examples =topythonnestedlist(data['x'])
+    examples = topythonnestedlist(data['x'])
 
     # for attribute
-    attributes=generate_attributes(45)
+    attributes = generate_attributes(45)
 
-    test_examples=[]
-    train_examples=[]
+    test_examples = []
+    train_examples = []
 
-    test_facial_expression=[]
-    train_facial_expression=[]
+    test_facial_expression = []
+    train_facial_expression = []
 
-    for ind,val in enumerate(examples):
+    for ind, val in enumerate(examples):
         # 选取20%作为test
-        if ind%5==0:
+        if ind % 5 == 0:
             test_examples.append(examples[ind])
             test_facial_expression.append(facial_expression[ind])
         else:
             train_examples.append(examples[ind])
             train_facial_expression.append(facial_expression[ind])
 
-
     # for clean TREE
-    TREELIST = []
-    for j in range(1,7):
+    tree_list = []
+
+    for j in range(1, 7):
         # for binary_targets
         binary_targets = choose_emotion(train_facial_expression, j)
-        DECISION_TREE_LEARNING(train_examples,attributes,binary_targets)
-        TREELIST.append(TREE_NODES)
-        TREE_NODES=[]
+        DECISION_TREE_LEARNING(train_examples, attributes, binary_targets)
+        tree_list.append(TREE_NODES)
+        TREE_NODES = []
 
-    for tree in TREELIST:
-        print tree
+    test_label = predictions(tree_list, test_examples)
 
-    test_labbel=predictions(TREELIST,test_examples)
-    print test_labbel
-    print len(test_labbel)
-    print len(test_examples)
+
+    print test_label
+    print len(test_label)
+    print test_facial_expression
     print len(test_facial_expression)
-    # print len(data['x'][0])
+
+    confusion_matrix = np.array([0] * 36).reshape(6, 6)
+
+    # Generate confusion matrix
+    for ind, val in enumerate(test_label):
+        confusion_matrix[test_facial_expression[ind] - 1, val - 1] += 1
+
+    print
+    print confusion_matrix
+    print
+    average_recall = []
+    average_precision_rate = []
+
+    for goal in xrange(6):
+        average_recall.append(float(confusion_matrix[goal, goal]) / float(confusion_matrix[goal].sum()))
+        average_precision_rate.append(float(confusion_matrix[goal, goal]) / float(confusion_matrix[:, goal].sum()))
+
+    f1_measures = []
+    correct_times = 0
+
+    for goal in xrange(6):
+        f1_measures.append(2 * average_recall[goal] * average_precision_rate[goal] /
+                           float(average_precision_rate[goal] + average_recall[goal]))
+        correct_times += confusion_matrix[goal, goal]
+
+
+    average_classification_rate = float(correct_times) / float(confusion_matrix.sum())
+
+    print average_recall
+    print average_precision_rate
+    print f1_measures
+    print average_classification_rate
+
+
+
+
 
 
