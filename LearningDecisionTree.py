@@ -146,7 +146,7 @@ def DECISION_TREE_LEARNING(examples, attributes, binary_targets):
                     TREE_NODES.append(node)
                     return node
 
-                
+
                 else:
                     node = [time.time(), 'NO', []]
                     TREE_NODES.append(node)
@@ -240,6 +240,5 @@ if __name__ == "__main__":
 
     for tree in NOISYTREELIST:
         print tree
-    # print len(data['x'][0])
 
 
