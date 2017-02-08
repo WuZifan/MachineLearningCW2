@@ -4,8 +4,9 @@ import math as mt
 import matplotlib.pyplot as plt
 import numpy as np
 import time
-
-# from graphviz import Digraph
+from graphviz import Digraph
+import graphviz
+from graphviz import Digraph
 
 __Author__ = 'Tree_Diagram'
 
@@ -244,6 +245,28 @@ def find_labbel(exam, tree, root):
             return find_labbel(exam, tree, tree[next_node_index])
 
 
+def DrawDecisionTree(nodelabel, tree, dot):
+    item = []
+    for node in tree:
+        if node[0] == nodelabel:
+            item = node
+            break
+    print item
+    [nodelabel, name, leaves]= item
+    strnodelabel = "%.19f" % nodelabel
+    dot.node(strnodelabel, str(name))
+    if len(leaves) == 0:
+        pass
+    else:
+        DrawDecisionTree(leaves[0], tree, dot)
+        DrawDecisionTree(leaves[1], tree, dot)
+        strleaves0 = "%.19f" % leaves[0]
+        strleaves1 = "%.19f" % leaves[1]
+        dot.edge(strnodelabel, strleaves0, label='0',_attributes=None)
+        dot.edge(strnodelabel, strleaves1, label='1',_attributes=None)
+    return dot
+
+
 if __name__ == "__main__":
     # 导入数据
     matfn = u'cleandata_students.mat'
@@ -296,26 +319,25 @@ if __name__ == "__main__":
             confusion_matrix[test_facial_expression[ind] - 1, val - 1] += 1
 
         confusion_matrix_final = np.add(confusion_matrix_final, confusion_matrix)
+        average_recall = []
+        average_precision_rate = []
 
-    average_recall = []
-    average_precision_rate = []
+        for goal in xrange(6):
+            average_recall.append(float(confusion_matrix[goal, goal]) / float(confusion_matrix[goal].sum()))
+            average_precision_rate.append(float(confusion_matrix[goal, goal]) / float(confusion_matrix[:, goal].sum()))
 
-    for goal in xrange(6):
-        average_recall.append(float(confusion_matrix_final[goal, goal]) / float(confusion_matrix_final[goal].sum()))
-        average_precision_rate.append(
-            float(confusion_matrix_final[goal, goal]) / float(confusion_matrix_final[:, goal].sum()))
+        f1_measures = []
+        correct_times = 0
 
-    f1_measures = []
-    correct_times = 0
+        for goal in xrange(6):
+            f1_measures.append(2 * average_recall[goal] * average_precision_rate[goal] /
+                               float(average_precision_rate[goal] + average_recall[goal]))
+            correct_times += confusion_matrix[goal, goal]
 
-    for goal in xrange(6):
-        f1_measures.append(2 * average_recall[goal] * average_precision_rate[goal] /
-                           float(average_precision_rate[goal] + average_recall[goal]))
-        correct_times += confusion_matrix_final[goal, goal]
+        average_classification_rate = float(correct_times) / float(confusion_matrix.sum())
 
-    average_classification_rate = float(correct_times) / float(confusion_matrix_final.sum())
-
-    print average_recall
-    print average_precision_rate
-    print f1_measures
-    print average_classification_rate
+        dot = Digraph(comment='')
+        for ind, tree in enumerate(tree_list):
+            print tree[-1]
+            DrawDecisionTree(tree[-1][0],tree, dot)
+            dot.render('test-output/test' + str(ind) + '.gv', view=True)
