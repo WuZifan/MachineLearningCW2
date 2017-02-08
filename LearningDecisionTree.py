@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import time
 import TestDecisionTree
-#import graphviz
-#from graphviz import Digraph
+import graphviz
+from graphviz import Digraph
 
 __Author__ = 'Tree_Diagram'
 
@@ -256,6 +256,11 @@ if __name__ == "__main__":
     for tree in NOISYTREELIST:
         print tree
 
-
+    test_labbel = TestDecisionTree.predictions(TREELIST, test_examples)
+    print test_labbel
+    print len(test_labbel)
+    DrawDecisionTree(tree[-1][1],tree,dot)
+    dot.render('test.gv',view=True)
+    # print len(data['x'][0])
 
 
