@@ -8,6 +8,7 @@ import time
 
 __Author__ = 'Tree_Diagram'
 
+
 # 将选中的表情设置为1，其他为0,对应binary_targets
 def choose_emotion(facial_expression, emotion):
     choosen_emotion = []
@@ -18,9 +19,11 @@ def choose_emotion(facial_expression, emotion):
             choosen_emotion.append(0)
     return choosen_emotion
 
+
 # 将属性编号为0到44，对应attributes
 def generate_attributes(num_attributes):
     return range(0, num_attributes)
+
 
 def examples_havesamevalue(binary_targets):
     flag=True
@@ -37,13 +40,14 @@ def examples_havesamevalue(binary_targets):
     else:
         return -1
 
+
 def get_information_gain(p, n):
     pf = float(p)
     nf = float(n)
-    return - pf / (pf + nf) * mt.log10(pf / (pf + nf)) / mt.log10(2) \
-           - nf / (pf + nf) * mt.log10(nf / (pf + nf)) / mt.log10(2)
+    return - pf / (pf + nf) * mt.log(pf / (pf + nf), base=2) \
+           - nf / (pf + nf) * mt.log(nf / (pf + nf), base=2)
 
-#fine
+
 def choose_best_attribute(data_set, attributes, binary_target):
     n0 = 0
     n1 = 0
@@ -65,7 +69,6 @@ def choose_best_attribute(data_set, attributes, binary_target):
         nn1 = 0
 
         for ind, value in enumerate(data_set):
-
             if value[index] == 1:
                 if binary_target[ind] == 1:
                     pn1 += 1
@@ -80,27 +83,31 @@ def choose_best_attribute(data_set, attributes, binary_target):
         if pn1 == 0 or nn1 == 0:
             entropy1 = 0
         else:
-            entropy1 = (pn1 + nn1) / (n1 + n0) * get_information_gain(pn1, nn1)
+            entropy1 = float(pn1 + nn1) / float(n1 + n0) * get_information_gain(pn1, nn1)
 
         if pn0 == 0 or nn0 == 0:
             entropy0 = 0
         else:
-            entropy0 = (pn0 + nn0) / (n1 + n0) * get_information_gain(pn0, nn0)
+            entropy0 = float(pn0 + nn0) / float(n1 + n0) * get_information_gain(pn0, nn0)
 
         information_gain.append(entropy - entropy0 - entropy1)
-
+        print information_gain
+        print "max index " + str(information_gain.index(max(information_gain)))
+        print
     return information_gain.index(max(information_gain))
+
 
 def majority_value(binary_targets):
     length = 0
     for row in binary_targets:
         if row == 1:
-            length = length + 1
+            length += 1
 
     if length * 2 >= len(binary_targets):
         return 1
     else:
         return 0
+
 
 def generate_sub(examples,binary_targets,best_attribute,attribute_state):
     myexamples=[]
@@ -112,7 +119,9 @@ def generate_sub(examples,binary_targets,best_attribute,attribute_state):
     return myexamples,mybinary_targets
 
 # 主要被调用函数
-TREE_NODES=[]
+TREE_NODES = []
+
+
 def DECISION_TREE_LEARNING(examples, attributes, binary_targets):
     target_value=examples_havesamevalue(binary_targets)
     if target_value!=-1:
@@ -157,6 +166,7 @@ def DECISION_TREE_LEARNING(examples, attributes, binary_targets):
         TREE_NODES.append(tree)
     return tree
 
+
 def DrawDecisionTree(label, tree, dot):
     for node in tree:
         if node[0] == label:
@@ -173,12 +183,14 @@ def DrawDecisionTree(label, tree, dot):
         dot.edges(label, leaves[1], label='1')
     return dot
 
+
 def topythonlist(data):
     mylist=[]
     for d in data:
         for dd in d:
             mylist.append(dd)
     return mylist
+
 
 def topythonnestedlist(data):
     mynestedlist=[]
