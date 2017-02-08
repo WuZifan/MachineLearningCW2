@@ -256,9 +256,6 @@ if __name__ == "__main__":
     for tree in NOISYTREELIST:
         print tree
 
-    test_labbel = TestDecisionTree.predictions(TREELIST, test_examples)
-    print test_labbel
-    print len(test_labbel)
-    # print len(data['x'][0])
+
 
 
