@@ -191,7 +191,6 @@ def DrawDecisionTree(nodelabel, tree, dot):
         dot.edges(strnodelabel, strleaves1, label='1',_attributes=None)
     return dot
 
-
 def topythonlist(data):
     mylist=[]
     for d in data:
