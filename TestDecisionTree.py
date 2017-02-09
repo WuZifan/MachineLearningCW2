@@ -264,17 +264,58 @@ def load_data(path):
 
 
 def cross_validation_test(examples, facial_expression):
+        global TREE_NODES
+        confusion_matrix_final = np.array([0] * 36).reshape(6, 6)
+        test_examples = []
+        train_examples = []
+        test_facial_expression = []
+        train_facial_expression = []
+        for ind, val in enumerate(examples):
+             examples[ind]
+             facial_expression[ind]
+        # for clean TREE
+        tree_list = []
+        for j in range(1, 7):
+            # for binary_targets
+            binary_targets = choose_emotion(facial_expression, j)
+            DECISION_TREE_LEARNING(examples, attributes, binary_targets)
+            tree_list.append(TREE_NODES)
+
+            TREE_NODES = []
+
+        test_label = predictions(tree_list, test_examples)
+
+        confusion_matrix = np.array([0] * 36).reshape(6, 6)
+
+
+        # Generate confusion matrix
+        for ind, val in enumerate(test_label):
+            confusion_matrix[test_facial_expression[ind] - 1, val - 1] += 1
+
+        confusion_matrix_final = np.add(confusion_matrix_final, confusion_matrix)
+
+
+        for ind, tree in enumerate(tree_list):
+            dot = Digraph(comment='')
+            print tree
+            DrawDecisionTree(tree[-1][0], tree, dot)
+            dot.render('test-output/test' + str(ind) + '.gv', view=True)
+
+        return confusion_matrix_final
+
+
+def cross_validation_test2(examples, facial_expression):
     global TREE_NODES
     confusion_matrix_final = np.array([0] * 36).reshape(6, 6)
 
-    for inx in range(0, 5):
+    for inx in range(0, 10):
         test_examples = []
         train_examples = []
         test_facial_expression = []
         train_facial_expression = []
         for ind, val in enumerate(examples):
             # 选取10%作为test
-            if ind % 5 == inx:
+            if ind % 10 == inx:
                 # 当选取的test数据越少，其正确越越高
                 test_examples.append(examples[ind])
                 test_facial_expression.append(facial_expression[ind])
@@ -312,6 +353,7 @@ def cross_validation_test(examples, facial_expression):
             dot.render('test-output/test' + str(inx)+str(ind) + '.gv', view=True)
 
     return confusion_matrix_final
+
 
 def evaluation(confusion_matrix_final):
     average_recall = []
