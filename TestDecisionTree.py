@@ -122,59 +122,67 @@ def generate_sub(examples, binary_targets, best_attribute, attribute_state):
 
 # 主要被调用函数
 TREE_NODES = []
-
-
+myNAME=1
 def DECISION_TREE_LEARNING(examples, attributes, binary_targets):
+    global myNAME
     target_value = examples_havesamevalue(binary_targets)
     if target_value != -1:
         if target_value == 1:
-            node = [hashlib.sha256(str(time.time())).hexdigest(),'YES', []]
+            node = [hashlib.sha256(str(myNAME)).hexdigest(),'YES', []]
+            myNAME+=1
             TREE_NODES.append(node)
             return node
         else:
-            node = [hashlib.sha256(str(time.time())).hexdigest(), 'NO', []]
+            node = [hashlib.sha256(str(myNAME)).hexdigest(), 'NO', []]
+            myNAME+=1
             TREE_NODES.append(node)
             return node
     elif len(attributes) == 0:
         ma_value = majority_value(binary_targets)
         if ma_value == 1:
-            node = [hashlib.sha256(str(time.time())).hexdigest(), 'YES', []]
+            node = [hashlib.sha256(str(myNAME)).hexdigest(), 'YES', []]
+            myNAME+=1
             TREE_NODES.append(node)
             return node
         else:
-            node = [hashlib.sha256(str(time.time())).hexdigest(), 'NO', []]
+            node = [hashlib.sha256(str(myNAME)).hexdigest(), 'NO', []]
+            myNAME+=1
             TREE_NODES.append(node)
             return node
     else:
         best_attribute = choose_best_attribute(examples, attributes, binary_targets)
-        tree = [hashlib.sha256(str(time.time())).hexdigest(), str(attributes[best_attribute]), []]
+        tree = [hashlib.sha256(str(myNAME)).hexdigest(), str(attributes[best_attribute]), []]
+        myNAME+=1
         for attribute_state in [0, 1]:
             newexamples, newbinary_targets = generate_sub(examples, binary_targets, best_attribute, attribute_state)
             if len(newexamples) == 0:
                 ma_value2 = majority_value(binary_targets)
                 if ma_value2 == 1:
-                    node = [hashlib.sha256(str(time.time())).hexdigest(), 'YES', []]
+                    node = [hashlib.sha256(str(myNAME)).hexdigest(), 'YES', []]
+                    myNAME+=1
                     TREE_NODES.append(node)
                     return node
                 else:
-                    node = [hashlib.sha256(str(time.time())).hexdigest(), 'NO', []]
+                    node = [hashlib.sha256(str(myNAME)).hexdigest(), 'NO', []]
+                    myNAME+=1
                     TREE_NODES.append(node)
                     return node
             else:
                 newattributes = attributes[:best_attribute] + attributes[best_attribute + 1:]
                 newexamples = map(lambda x: x[:best_attribute] + x[best_attribute + 1:], newexamples)
+                #print "best attribute:"+str(best_attribute+1)+"state: "+str(attribute_state)
+                #print "binary: "+str(newbinary_targets)
                 nextTreeNode = DECISION_TREE_LEARNING(newexamples, newattributes, newbinary_targets)
                 tree[2].append(nextTreeNode[0])
         TREE_NODES.append(tree)
     return tree
 
-def DrawDecisionTree(nodelabel, tree, dot):
+def DrawDecisionTree(label, tree, dot):
     item = []
     for node in tree:
-        if node[0] == nodelabel:
+        if node[0] == label:
             item = node
             break
-    print item
     [nodelabel, name, leaves]= item
     dot.node(nodelabel, str(name))
     if len(leaves) == 0:
@@ -185,6 +193,7 @@ def DrawDecisionTree(nodelabel, tree, dot):
         dot.edge(nodelabel, leaves[0], label='0',_attributes=None)
         dot.edge(nodelabel, leaves[1], label='1',_attributes=None)
     return dot
+
 
 
 def topythonlist(data):
@@ -281,6 +290,7 @@ def cross_validation_test(examples, facial_expression):
             binary_targets = choose_emotion(train_facial_expression, j)
             DECISION_TREE_LEARNING(train_examples, attributes, binary_targets)
             tree_list.append(TREE_NODES)
+
             TREE_NODES = []
 
         test_label = predictions(tree_list, test_examples)
@@ -297,6 +307,7 @@ def cross_validation_test(examples, facial_expression):
 
         for ind, tree in enumerate(tree_list):
             dot = Digraph(comment='')
+            print tree
             DrawDecisionTree(tree[-1][0], tree, dot)
             dot.render('test-output/test' + str(inx)+str(ind) + '.gv', view=True)
 
@@ -321,14 +332,14 @@ def evaluation(confusion_matrix_final):
 
     average_classification_rate = float(correct_times) / float(confusion_matrix_final.sum())
 
-    print "average_recall rate: "
-    print average_recall
-    print "average_precision_rate: "
-    print average_precision_rate
-    print "f1 measure: "
-    print f1_measures
-    print "average classification rate: "
-    print average_classification_rate
+    #print "average_recall rate: "
+    #print average_recall
+    #print "average_precision_rate: "
+    #print average_precision_rate
+    #print "f1 measure: "
+    #print f1_measures
+    #print "average classification rate: "
+    #print average_classification_rate
 
 
 if __name__ == "__main__":
@@ -347,13 +358,13 @@ if __name__ == "__main__":
 
     for ind, path in enumerate(source):
         facial_expression, example = load_data(path)
-        print "For %dth input file %s : " % (ind + 1, path)
+        #print "For %dth input file %s : " % (ind + 1, path)
         res = cross_validation_test(example, facial_expression)
-        print "Cross Validation matrix:"
-        print res
-        print "evaluate result: "
+        #print "Cross Validation matrix:"
+        #print res
+        #print "evaluate result: "
         evaluation(res)
-        print
+        #print
 
 
     # # 45个属性的数据,对应choose_emotion中第一个参数
