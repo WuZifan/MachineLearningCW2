@@ -207,22 +207,22 @@ def topythonnestedlist(data):
     return mynestedlist
 
 if __name__ == "__main__":
-    # 导入数据
+    # load data as numpy matrix
     matfn = u'cleandata_students.mat'
     matfn2= u'noisydata_students.mat'
     data = sio.loadmat(matfn)
     noisydata=sio.loadmat(matfn2)
 
-    # 45个属性的数据,对应choose_emotion中第一个参数
+    # convert label to python list
     facial_expression=topythonlist(data['y'])
 
-    # 45个属性的数据,对应choose_emotion中第一个参数,for noisy
+    # convert label to python list
     no_facial_expression=topythonlist(noisydata['y'])
 
-    # 不同的label,对应examples
+    # convert label to python list
     examples =topythonnestedlist(data['x'])
 
-    # 不同的label,对应examples,for noisy
+    # convert label to python list
     noisyexample=topythonnestedlist(noisydata['x'])
 
     # for attribute
