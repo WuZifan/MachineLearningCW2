@@ -6,9 +6,8 @@ import numpy as np
 import random
 import sys
 import hashlib
-
-# import graphviz
-# from graphviz import Digraph
+import graphviz
+from graphviz import Digraph
 
 __Author__ = 'Tree_Diagram'
 
@@ -349,7 +348,7 @@ def load_data(path):
     return facial_expression, examples
 
 
-def cross_validation_test2(examples, facial_expression):
+def draw_decisiontree_test(examples, facial_expression):
     global TREE_NODES
     confusion_matrix_final = np.array([0] * 36).reshape(6, 6)
     test_examples = []
@@ -379,14 +378,12 @@ def cross_validation_test2(examples, facial_expression):
 
     confusion_matrix_final = np.add(confusion_matrix_final, confusion_matrix)
 
-    # for ind, tree in enumerate(tree_list):
-    #     dot = Digraph(comment='')
-    #     print tree
-    #     DrawDecisionTree(tree[-1][0], tree, dot)
-    #     dot.render('test-output/test' + str(ind) + '.gv', view=True)
+    for ind, tree in enumerate(tree_list):
+        dot = Digraph(comment='')
+        DrawDecisionTree(tree[-1][0], tree, dot)
+        dot.render('test-output/test' + str(ind) + '.gv', view=True)
 
     return confusion_matrix_final
-
 
 def cross_validation_test(examples, facial_expression):
     global TREE_NODES
@@ -428,15 +425,7 @@ def cross_validation_test(examples, facial_expression):
             confusion_matrix[test_facial_expression[ind] - 1, val - 1] += 1
 
         confusion_matrix_final = np.add(confusion_matrix_final, confusion_matrix)
-
-        # for ind, tree in enumerate(tree_list):
-        #     dot = Digraph(comment='')
-        #     print tree
-        #     DrawDecisionTree(tree[-1][0], tree, dot)
-        #     dot.render('test-output/test' + str(inx)+str(ind) + '.gv', view=True)
-
     return confusion_matrix_final
-
 
 def evaluation(confusion_matrix_final):
     average_recall = []
@@ -493,6 +482,10 @@ if __name__ == "__main__":
     fig, ax = plt.subplots(1, 4)
     fig.canvas.set_window_title('Evaluation Using Depth Method')
     classification_rate = []
+    for ind in enumerate(source):
+        facial_expression, example = load_data(path1)
+        draw_decisiontree_test(example, facial_expression)
+
     for ind, path in enumerate(source):
         facial_expression, example = load_data(path)
         print "For %dth input file %s : " % (ind + 1, path)
