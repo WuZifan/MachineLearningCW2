@@ -6,8 +6,8 @@ import numpy as np
 import time
 import sys
 import hashlib
-import graphviz
-from graphviz import Digraph
+#import graphviz
+#from graphviz import Digraph
 
 __Author__ = 'Tree_Diagram'
 
@@ -255,10 +255,9 @@ def predictions_boost(TreeList, testData,testBinary):
         everyResult,comment_tree=update_comment_result(comment_tree,testBinary[inx],labbel)
         finalresult.append(everyResult)
         labbel=[]
-    print "finalresult: "+str(finalresult)
-    print "comment_tree: "+str(comment_tree)
-    print "finalresult: "+str(finalresult)
-    print "realResult: "+str(testBinary)
+    # print "comment_tree: "+str(comment_tree)
+    # print "finalresult: "+str(finalresult)
+    # print "realResult: "+str(testBinary)
     return finalresult;
 
 # 预测函数,随机
@@ -367,11 +366,11 @@ def cross_validation_test2(examples, facial_expression):
 
     confusion_matrix_final = np.add(confusion_matrix_final, confusion_matrix)
 
-    for ind, tree in enumerate(tree_list):
-        dot = Digraph(comment='')
-        print tree
-        DrawDecisionTree(tree[-1][0], tree, dot)
-        dot.render('test-output/test' + str(ind) + '.gv', view=True)
+    # for ind, tree in enumerate(tree_list):
+    #     dot = Digraph(comment='')
+    #     print tree
+    #     DrawDecisionTree(tree[-1][0], tree, dot)
+    #     dot.render('test-output/test' + str(ind) + '.gv', view=True)
 
     return confusion_matrix_final
 
@@ -419,11 +418,11 @@ def cross_validation_test(examples, facial_expression):
         confusion_matrix_final = np.add(confusion_matrix_final, confusion_matrix)
 
 
-        for ind, tree in enumerate(tree_list):
-            dot = Digraph(comment='')
-            print tree
-            DrawDecisionTree(tree[-1][0], tree, dot)
-            dot.render('test-output/test' + str(inx)+str(ind) + '.gv', view=True)
+        # for ind, tree in enumerate(tree_list):
+        #     dot = Digraph(comment='')
+        #     print tree
+        #     DrawDecisionTree(tree[-1][0], tree, dot)
+        #     dot.render('test-output/test' + str(inx)+str(ind) + '.gv', view=True)
 
     return confusion_matrix_final
 
