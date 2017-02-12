@@ -176,15 +176,15 @@ def DrawDecisionTree(nodelabel, tree, dot):
             break
     print item
     [nodelabel, name, leaves]= item
-    strnodelabel ="%.19f" % nodelabel
-    dot.node(strnodelabel, name)
+    strnodelabel = "%.18f" % nodelabel
+    dot.node(strnodelabel, str(name))
     if len(leaves) == 0:
         pass
     else:
         DrawDecisionTree(leaves[0], tree, dot)
         DrawDecisionTree(leaves[1], tree, dot)
-        strleaves0 ="%.19f" % leaves[0]
-        strleaves1 ="%.19f" % leaves[1]
+        strleaves0 = "%.18f" % leaves[0]
+        strleaves1 = "%.18f" % leaves[1]
         dot.edge(strnodelabel, strleaves0, label='0',_attributes=None)
         dot.edge(strnodelabel, strleaves1, label='1',_attributes=None)
     return dot
@@ -207,22 +207,22 @@ def topythonnestedlist(data):
     return mynestedlist
 
 if __name__ == "__main__":
-    # 导入数据
+    # load data as numpy matrix
     matfn = u'cleandata_students.mat'
     matfn2= u'noisydata_students.mat'
     data = sio.loadmat(matfn)
     noisydata=sio.loadmat(matfn2)
 
-    # 45个属性的数据,对应choose_emotion中第一个参数
+    # convert label to python list
     facial_expression=topythonlist(data['y'])
 
-    # 45个属性的数据,对应choose_emotion中第一个参数,for noisy
+    # convert label to python list
     no_facial_expression=topythonlist(noisydata['y'])
 
-    # 不同的label,对应examples
+    # convert label to python list
     examples =topythonnestedlist(data['x'])
 
-    # 不同的label,对应examples,for noisy
+    # convert label to python list
     noisyexample=topythonnestedlist(noisydata['x'])
 
     # for attribute
@@ -259,9 +259,9 @@ if __name__ == "__main__":
     test_labbel = TestDecisionTree.predictions(TREELIST, test_examples)
     print test_labbel
     print len(test_labbel)
-    dot = Digraph(comment='')
+    dot = Digraph(comment='learning_draw')
     DrawDecisionTree(tree[-1][1],tree,dot)
-    dot.render('test.gv',view=True)
+    dot.render('test-output\learning_draw.gv',view=True)
     # print len(data['x'][0])
 
 
