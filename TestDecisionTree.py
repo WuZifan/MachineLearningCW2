@@ -6,6 +6,7 @@ import numpy as np
 import time
 import sys
 import hashlib
+import random
 #import graphviz
 #from graphviz import Digraph
 
@@ -30,8 +31,11 @@ def generate_attributes(num_attributes):
 
 def examples_havesamevalue(binary_targets):
     flag = True
+    target=-1
     if len(binary_targets) != 0:
         target = binary_targets[0]
+    else:
+        target = -1
 
     # 遍历所有的example
     for j in range(0, len(binary_targets)):
@@ -263,19 +267,22 @@ def predictions_boost(TreeList, testData,testBinary):
 # 预测函数,随机
 def predictions(TreeList, testData):
     labbel = []
+    myresult=[]
     myfalg = False
     for exam in testData:
         for ind, tree in enumerate(TreeList):
             root = tree[-1]
             flag ,depth= find_label(exam, tree, root)
             if flag == 1:
-                myfalg = True
                 labbel.append(ind + 1)
-                break
-        if myfalg== False:
-            labbel.append(-1)
-        myfalg=False
-    return labbel;
+        if len(labbel) != 0:
+            labbel_len=len(labbel)
+            you_are_the_one=random.randint(0,labbel_len-1)
+            myresult.append(labbel[you_are_the_one])
+        else :
+            myresult.append(-1)
+        labbel=[]
+    return myresult;
 
 # 预测函数,带深度
 def predictions_deepth(TreeList, testData):
@@ -404,8 +411,8 @@ def cross_validation_test(examples, facial_expression):
             TREE_NODES = []
 
 
-        #test_label = predictions_deepth(tree_list, test_examples)                      #clean 0.729083665339
-        test_label = predictions_boost(tree_list,test_examples,test_facial_expression) #clean 0.73406374502
+        test_label = predictions_deepth(tree_list, test_examples)                      #clean 0.729083665339
+        #test_label = predictions_boost(tree_list,test_examples,test_facial_expression) #clean 0.73406374502
         #test_label = predictions(tree_list, test_examples)                              #clean 0.732071713147
         # time.sleep(100000)
         confusion_matrix = np.array([0] * 36).reshape(6, 6)
@@ -455,7 +462,7 @@ def evaluation(confusion_matrix_final):
     print "average classification rate: "
     print average_classification_rate
 
-
+# clean0.732071713147 noisy:0.582417582418
 if __name__ == "__main__":
     # 导入数据
     path1 = u'cleandata_students.mat'
