@@ -176,15 +176,15 @@ def DrawDecisionTree(nodelabel, tree, dot):
             break
     print item
     [nodelabel, name, leaves]= item
-    strnodelabel ="%.19f" % nodelabel
-    dot.node(strnodelabel, name)
+    strnodelabel = "%.18f" % nodelabel
+    dot.node(strnodelabel, str(name))
     if len(leaves) == 0:
         pass
     else:
         DrawDecisionTree(leaves[0], tree, dot)
         DrawDecisionTree(leaves[1], tree, dot)
-        strleaves0 ="%.19f" % leaves[0]
-        strleaves1 ="%.19f" % leaves[1]
+        strleaves0 = "%.18f" % leaves[0]
+        strleaves1 = "%.18f" % leaves[1]
         dot.edge(strnodelabel, strleaves0, label='0',_attributes=None)
         dot.edge(strnodelabel, strleaves1, label='1',_attributes=None)
     return dot
@@ -259,9 +259,9 @@ if __name__ == "__main__":
     test_labbel = TestDecisionTree.predictions(TREELIST, test_examples)
     print test_labbel
     print len(test_labbel)
-    dot = Digraph(comment='')
+    dot = Digraph(comment='learning_draw')
     DrawDecisionTree(tree[-1][1],tree,dot)
-    dot.render('test.gv',view=True)
+    dot.render('test-output\learning_draw.gv',view=True)
     # print len(data['x'][0])
 
 
