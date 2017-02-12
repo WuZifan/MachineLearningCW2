@@ -6,8 +6,8 @@ import numpy as np
 import random
 import sys
 import hashlib
-#import graphviz
-#from graphviz import Digraph
+import graphviz
+from graphviz import Digraph
 
 __Author__ = 'Tree_Diagram'
 
@@ -105,7 +105,7 @@ def majority_value(binary_targets):
     length = 0
     for row in binary_targets:
         if row == 1:
-            length = length + 1
+            length += 1
 
     if length * 2 >= len(binary_targets):
         return 1
@@ -125,7 +125,9 @@ def generate_sub(examples, binary_targets, best_attribute, attribute_state):
 
 # 主要被调用函数
 TREE_NODES = []
-myNAME=1
+myNAME = 1
+
+
 def DECISION_TREE_LEARNING(examples, attributes, binary_targets):
     global myNAME
     target_value = examples_havesamevalue(binary_targets)
@@ -179,6 +181,7 @@ def DECISION_TREE_LEARNING(examples, attributes, binary_targets):
                 tree[2].append(nextTreeNode[0])
         TREE_NODES.append(tree)
     return tree
+
 
 def DrawDecisionTree(label, tree, dot):
     item = []
@@ -378,14 +381,12 @@ def cross_validation_test2(examples, facial_expression):
 
     confusion_matrix_final = np.add(confusion_matrix_final, confusion_matrix)
 
-    # for ind, tree in enumerate(tree_list):
-    #     dot = Digraph(comment='')
-    #     print tree
-    #     DrawDecisionTree(tree[-1][0], tree, dot)
-    #     dot.render('test-output/test' + str(ind) + '.gv', view=True)
+    for ind, tree in enumerate(tree_list):
+        dot = Digraph(comment='')
+        DrawDecisionTree(tree[-1][0], tree, dot)
+        dot.render('test-output/test' + str(ind) + '.gv', view=True)
 
     return confusion_matrix_final
-
 
 def cross_validation_test(examples, facial_expression):
     global TREE_NODES
@@ -416,9 +417,9 @@ def cross_validation_test(examples, facial_expression):
             tree_list.append(TREE_NODES)
             TREE_NODES = []
 
-        # test_label = predictions_deepth(tree_list, test_examples)                      # clean 0.729083665339
+        test_label = predictions_deepth(tree_list, test_examples)                      # clean 0.729083665339
         # test_label = predictions_boost(tree_list, test_examples, test_facial_expression)  # clean 0.73406374502
-        test_label = predictions(tree_list, test_examples)                              # clean 0.732071713147
+        # test_label = predictions(tree_list, test_examples)                              # clean 0.732071713147
         # time.sleep(100000)
         confusion_matrix = np.array([0] * 36).reshape(6, 6)
 
@@ -427,15 +428,7 @@ def cross_validation_test(examples, facial_expression):
             confusion_matrix[test_facial_expression[ind] - 1, val - 1] += 1
 
         confusion_matrix_final = np.add(confusion_matrix_final, confusion_matrix)
-
-        # for ind, tree in enumerate(tree_list):
-        #     dot = Digraph(comment='')
-        #     print tree
-        #     DrawDecisionTree(tree[-1][0], tree, dot)
-        #     dot.render('test-output/test' + str(inx)+str(ind) + '.gv', view=True)
-
     return confusion_matrix_final
-
 
 def evaluation(confusion_matrix_final):
     average_recall = []
@@ -489,7 +482,7 @@ if __name__ == "__main__":
     # for attribute
     attributes = generate_attributes(45)
 
-    fig, ax = plt.subplots(1, 1)
+    fig, ax = plt.subplots(1, 4)
     fig.canvas.set_window_title('Evaluation Using Depth Method')
     classification_rate = []
     for ind, path in enumerate(source):
@@ -504,36 +497,31 @@ if __name__ == "__main__":
 
         classification_rate.append(average_classification_rate)
         pos = np.arange(1, len(average_recall) + 1)
-        print pos
 
-        label = ['Recal','Precision Rate','F1 measures']
-        ax.bar(pos-0.3, average_recall, width=0.3,align='center', alpha=0.4,ec='#000000', ls='-',lw=1,color='r')
-        ax.bar(pos, average_precision_rate, width=0.3 ,align='center', alpha=0.4,ec='#000000',ls='-',lw=1,color='g')
-        ax.bar(pos + 0.3, f1_measures, width=0.3, align='center', alpha=0.4, ec='#000000', ls='-', lw=1,color='b')
-        ax.set_title("Average Evaluation For Random Prediction")
-        ax.legend(label, loc='upper left')
-        ax.set_ylim(0.0, 1.2)
-        ax.grid(True)
+        ax[0].bar(pos, average_recall, align='center', alpha=0.4, color=random_color())
+        ax[0].set_title("Average Recall")
+        ax[0].legend(source, loc='upper left')
+        ax[0].set_ylim(0.0, 1.2)
+        ax[0].grid(True)
 
-        # ax[1].bar(pos, average_precision_rate, align='center', alpha=0.4, color=random_color())
-        # ax[1].set_title("Average Precision Rate")
-        # ax[1].legend(source, loc='upper left')
-        # ax[1].set_ylim(0.0, 1.2)
-        # ax[1].grid(True)
-        #
-        # ax[2].bar(pos, f1_measures, align='center', alpha=0.4, color=random_color())
-        # ax[2].set_title("F1 Measure")
-        # ax[2].legend(source, loc='upper left')
-        # ax[2].set_ylim(0.0, 1.2)
-        # ax[2].grid(True)
-        #
-        # pos = np.arange(1, len(classification_rate) + 1)
-        # ax[3].bar(pos, classification_rate, align='center', alpha=0.4, color=random_color())
-        # ax[3].set_title("Classification Rate")
-        # ax[3].legend(source, loc='upper left')
-        # ax[3].set_xlim(0,3)
-        # ax[3].set_ylim(0.0, 1.2)
-        # ax[3].grid(True)
+        ax[1].bar(pos, average_precision_rate, align='center', alpha=0.4, color=random_color())
+        ax[1].set_title("Average Precision Rate")
+        ax[1].legend(source, loc='upper left')
+        ax[1].set_ylim(0.0, 1.2)
+        ax[1].grid(True)
+
+        ax[2].bar(pos, f1_measures, align='center', alpha=0.4, color=random_color())
+        ax[2].set_title("F1 Measure")
+        ax[2].legend(source, loc='upper left')
+        ax[2].set_ylim(0.0, 1.2)
+        ax[2].grid(True)
+
+        pos = np.arange(1, len(classification_rate) + 1)
+        ax[3].bar(pos, classification_rate, align='center', alpha=0.4, color=random_color())
+        ax[3].set_title("Classification Rate")
+        ax[3].legend(source, loc='upper left')
+        ax[3].set_ylim(0.0, 1.2)
+        ax[3].grid(True)
 
     plt.show()
 
