@@ -1,9 +1,9 @@
 # # -*- coding:utf8 -*-
 import scipy.io as sio
 import math as mt
-import matplotlib.pyplot as plt
 import numpy as np
 import time
+import sys
 
 # from graphviz import Digraph
 
@@ -23,7 +23,7 @@ def choose_emotion(facial_expression, emotion):
 
 # 将属性编号为0到44，对应attributes
 def generate_attributes(num_attributes):
-    return range(0, num_attributes)
+    return range(1, num_attributes + 1)
 
 
 def examples_havesamevalue(binary_targets):
@@ -209,7 +209,7 @@ def predictions(TreeList, testData):
     for exam in testData:
         for ind, tree in enumerate(TreeList):
             root = tree[-1]
-            flag,deepth = find_labbel(exam, tree, root)
+            flag = find_labbel(exam, tree, root)
             if flag == 1:
                 myfalg = True
                 labbel.append(ind + 1)
@@ -227,7 +227,7 @@ def predictions_deepth(TreeList, testData):
         maybeRigth=[]
         for ind, tree in enumerate(TreeList):
             root = tree[-1]
-            flag,deepth = find_labbel(exam, tree, root)
+            flag,deepth = find_label(exam, tree, root)
             if flag == 1:
                 myfalg = True
                 maybeRigth.append([ind+1,deepth])
@@ -247,21 +247,21 @@ def predictions_deepth(TreeList, testData):
         myfalg = False
     return labbel;
 
-def find_labbel(exam, tree, root):
+def find_label(exam, tree, root):
     if root[1] == 'YES':
         return (1,1)
     elif root[1] == 'NO':
         return (0,1)
     else:
-        attribute_num=int(root[1])
-        real_au=exam[attribute_num]
-        if real_au==0:
-            next_node_index=0;
-            for ind,node in enumerate(tree):
-                if node[0]==root[2][0]:
-                    next_node_index=ind
+        attribute_num = int(root[1])-1
+        real_au = exam[attribute_num]
+        if real_au == 0:
+            next_node_index = 0;
+            for ind, node in enumerate(tree):
+                if node[0] == root[2][0]:
+                    next_node_index = ind
                     break
-            flag_label,deepth=find_labbel(exam, tree, tree[next_node_index])
+            flag_label,deepth=find_label(exam, tree, tree[next_node_index])
             return (flag_label,deepth+1)
         else:
             next_node_index=0;
@@ -269,26 +269,20 @@ def find_labbel(exam, tree, root):
                 if node[0]==root[2][1]:
                     next_node_index=ind
                     break
-            flag_label, deepth = find_labbel(exam, tree, tree[next_node_index])
+            flag_label, deepth = find_label(exam, tree, tree[next_node_index])
             return (flag_label, deepth + 1)
 
 
-if __name__ == "__main__":
-    # 导入数据
-    #matfn = u'cleandata_students.mat'
-    matfn = u'noisydata_students.mat'
-
-    data = sio.loadmat(matfn)
-
-    # 45个属性的数据,对应choose_emotion中第一个参数
+def load_data(path):
+    data = sio.loadmat(path)
     facial_expression = topythonlist(data['y'])
-
-    # 不同的label,对应examples
     examples = topythonnestedlist(data['x'])
 
-    # for attribute
-    attributes = generate_attributes(45)
+    return facial_expression, examples
 
+
+def cross_validation_test(examples, facial_expression):
+    global TREE_NODES
     confusion_matrix_final = np.array([0] * 36).reshape(6, 6)
 
     for inx in range(0, 10):
@@ -298,7 +292,8 @@ if __name__ == "__main__":
         train_facial_expression = []
         for ind, val in enumerate(examples):
             # 选取10%作为test
-            if ind % 10 == inx:  # 当选取的test数据越少，其正确越越高
+            if ind % 10 == inx:
+                # 当选取的test数据越少，其正确越越高
                 test_examples.append(examples[ind])
                 test_facial_expression.append(facial_expression[ind])
             else:
@@ -326,6 +321,10 @@ if __name__ == "__main__":
 
         confusion_matrix_final = np.add(confusion_matrix_final, confusion_matrix)
 
+    return confusion_matrix_final
+
+
+def evaluation(confusion_matrix_final):
     average_recall = []
     average_precision_rate = []
 
@@ -344,7 +343,55 @@ if __name__ == "__main__":
 
     average_classification_rate = float(correct_times) / float(confusion_matrix_final.sum())
 
+    print "average_recall rate: "
     print average_recall
+    print "average_precision_rate: "
     print average_precision_rate
+    print "f1 measure: "
     print f1_measures
+    print "average classification rate: "
     print average_classification_rate
+
+
+if __name__ == "__main__":
+    # 导入数据
+    path1 = u'cleandata_students.mat'
+    path2 = u'noisydata_students.mat'
+
+    if len(sys.argv) == 1:
+        print "Empty input"
+        exit(1)
+
+    source = sys.argv[1:]
+
+    # for attribute
+    attributes = generate_attributes(45)
+
+    for ind, path in enumerate(source):
+        facial_expression, example = load_data(path)
+        print "For %dth input file %s : " % (ind + 1, path)
+        res = cross_validation_test(example, facial_expression)
+        print "Cross Validation matrix:"
+        print res
+        print "evaluate result: "
+        evaluation(res)
+        print
+
+
+    # # 45个属性的数据,对应choose_emotion中第一个参数
+    # facial_expression1, examples1 = load_data(path1)
+    # facial_expression2, examples2 = load_data(path2)
+    #
+    # print "For clean data:"
+    # res = cross_validation_test(examples1, facial_expression1)
+    # print "Cross Validation matrix:"
+    # print res
+    # print "evaluate result: "
+    # evaluation(res)
+    #
+    # print "For noisy data:"
+    # res = cross_validation_test(examples2, facial_expression2)
+    # print "Cross Validation matrix:"
+    # print res
+    # print "evaluate result: "
+    # evaluation(res)
