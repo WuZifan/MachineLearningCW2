@@ -121,7 +121,6 @@ def generate_sub(examples, binary_targets, best_attribute, attribute_state):
 # 主要被调用函数
 TREE_NODES = []
 
-
 def DECISION_TREE_LEARNING(examples, attributes, binary_targets):
     target_value = examples_havesamevalue(binary_targets)
     if target_value != -1:
@@ -201,6 +200,53 @@ def topythonnestedlist(data):
         mynestedlist.append(mylist)
     return mynestedlist
 
+def update_comment_result(comment_tree,real_result,test_label):
+    myresult=-1
+    myweight=0-sys.maxint
+    # 选出这次的label
+    for ind in range(0,6):
+        if test_label[ind]==1:
+            if myweight <= comment_tree[ind]:
+                myweight=comment_tree[ind]
+                myresult=ind+1
+
+    # 更新comment
+    for ind in range(0,6):
+        if ind+1==real_result:
+            if test_label[ind]==1:
+                comment_tree[ind]+=1
+            else:
+                comment_tree[ind]-=1
+        elif ind+1!=real_result:
+            if test_label[ind]==0:
+                comment_tree[ind]+=1
+            else:
+                comment_tree[ind]-=1
+    return myresult,comment_tree
+
+# 预测函数,boost方法
+def predictions_boost(TreeList, testData,testBinary):
+    # 存储对每个example的6棵树的判断
+    labbel = []
+    # 存储对每棵树的评价,这里硬编码了
+    comment_tree=[1,1,1,1,1,1]
+    # 最终结果
+    finalresult=[]
+    for inx,exam in enumerate(testData):
+        for ind, tree in enumerate(TreeList):
+            root = tree[-1]
+            flag,depth= find_label(exam, tree, root)
+            myfalg = True
+            labbel.append(flag)
+        # print("labbel: "+ str(labbel))
+        everyResult,comment_tree=update_comment_result(comment_tree,testBinary[inx],labbel)
+        finalresult.append(everyResult)
+        labbel=[]
+    print "finalresult: "+str(finalresult)
+    print "comment_tree: "+str(comment_tree)
+    print "finalresult: "+str(finalresult)
+    print "realResult: "+str(testBinary)
+    return finalresult;
 
 # 预测函数,随机
 def predictions(TreeList, testData):
@@ -209,7 +255,7 @@ def predictions(TreeList, testData):
     for exam in testData:
         for ind, tree in enumerate(TreeList):
             root = tree[-1]
-            flag = find_labbel(exam, tree, root)
+            flag ,depth= find_label(exam, tree, root)
             if flag == 1:
                 myfalg = True
                 labbel.append(ind + 1)
@@ -238,11 +284,10 @@ def predictions_deepth(TreeList, testData):
             final_result=0
             final_deep=0
             for vals in maybeRigth:
-                print "every deep is "+str(vals[1])
+
                 if vals[1]>final_deep:
                     final_deep=vals[1]
                     final_result=vals[0]
-            print "final_deep is "+str(final_deep)
             labbel.append(final_result)
         myfalg = False
     return labbel;
@@ -310,9 +355,11 @@ def cross_validation_test(examples, facial_expression):
             tree_list.append(TREE_NODES)
             TREE_NODES = []
 
-        test_label = predictions_deepth(tree_list, test_examples)
-        #test_label = predictions(tree_list, test_examples)
 
+        #test_label = predictions_deepth(tree_list, test_examples)                      #clean 0.729083665339
+        test_label = predictions_boost(tree_list,test_examples,test_facial_expression) #clean 0.73406374502
+        #test_label = predictions(tree_list, test_examples)                              #clean 0.732071713147
+        # time.sleep(100000)
         confusion_matrix = np.array([0] * 36).reshape(6, 6)
 
         # Generate confusion matrix
@@ -371,8 +418,14 @@ if __name__ == "__main__":
         facial_expression, example = load_data(path)
         print "For %dth input file %s : " % (ind + 1, path)
         res = cross_validation_test(example, facial_expression)
-        print "Cross Validation matrix:"
+        print "Confusion matrix:"
         print res
+        print sum(res[0])
+        print sum(res[1])
+        print sum(res[2])
+        print sum(res[3])
+        print sum(res[4])
+        print sum(res[5])
         print "evaluate result: "
         evaluation(res)
         print
