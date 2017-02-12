@@ -4,7 +4,8 @@ import math as mt
 import numpy as np
 import time
 import sys
-
+import matplotlib.pyplot as plt
+import random
 # from graphviz import Digraph
 
 __Author__ = 'Tree_Diagram'
@@ -313,15 +314,23 @@ def evaluation(confusion_matrix_final):
 
     average_classification_rate = float(correct_times) / float(confusion_matrix_final.sum())
 
-    print "average_recall rate: "
+    print "Average_recall rate: "
     print average_recall
-    print "average_precision_rate: "
+    print "Average_precision_rate: "
     print average_precision_rate
-    print "f1 measure: "
+    print "F1 measure: "
     print f1_measures
-    print "average classification rate: "
+    print "Average classification rate: "
     print average_classification_rate
 
+    return average_recall, average_precision_rate, f1_measures, average_classification_rate
+
+
+def random_color():
+    color_red = random.randint(16, 255)
+    color_blue = random.randint(16, 255)
+    color_green = random.randint(16, 255)
+    return '#' + str(hex(color_red)[2:]) + str(hex(color_green)[2:]) + str(hex(color_blue)[2:])
 
 if __name__ == "__main__":
     # 导入数据
@@ -337,31 +346,61 @@ if __name__ == "__main__":
     # for attribute
     attributes = generate_attributes(45)
 
+    fig, ax = plt.subplots(1, 4)
+    classification_rate = []
     for ind, path in enumerate(source):
         facial_expression, example = load_data(path)
         print "For %dth input file %s : " % (ind + 1, path)
         res = cross_validation_test(example, facial_expression)
-        print "Cross Validation matrix:"
+        print "Confusion matrix:"
         print res
-        print "evaluate result: "
-        evaluation(res)
+        print "Evaluate result: "
+        average_recall, average_precision_rate, f1_measures, average_classification_rate = evaluation(res)
         print
 
+        classification_rate.append(average_classification_rate)
+        pos = np.arange(1, len(average_recall) + 1)
 
-    # # 45个属性的数据,对应choose_emotion中第一个参数
-    # facial_expression1, examples1 = load_data(path1)
-    # facial_expression2, examples2 = load_data(path2)
-    #
-    # print "For clean data:"
-    # res = cross_validation_test(examples1, facial_expression1)
-    # print "Cross Validation matrix:"
-    # print res
-    # print "evaluate result: "
-    # evaluation(res)
-    #
-    # print "For noisy data:"
-    # res = cross_validation_test(examples2, facial_expression2)
-    # print "Cross Validation matrix:"
-    # print res
-    # print "evaluate result: "
-    # evaluation(res)
+        ax[0].bar(pos, average_recall, align='center', alpha=0.4, color=random_color())
+        ax[0].set_title("Average Recall")
+        ax[0].legend(source, loc='upper left')
+        ax[0].set_ylim(0.0, 1.2)
+        ax[0].grid(True)
+
+        ax[1].bar(pos, average_precision_rate, align='center', alpha=0.4, color=random_color())
+        ax[1].set_title("Average Precision Rate")
+        ax[1].legend(source, loc='upper left')
+        ax[1].set_ylim(0.0, 1.2)
+        ax[1].grid(True)
+
+        ax[2].bar(pos, f1_measures, align='center', alpha=0.4, color=random_color())
+        ax[2].set_title("F1 Measure")
+        ax[2].legend(source, loc='upper left')
+        ax[2].set_ylim(0.0, 1.2)
+        ax[2].grid(True)
+
+    ax[3].bar(range(1, len(source) + 1), classification_rate, align='center', alpha=0.4, color=random_color())
+    ax[3].set_title("Classification Rate")
+    ax[3].legend(source, loc='upper left')
+    ax[3].set_ylim(0.0, 1.2)
+    ax[3].grid(True)
+
+    plt.show()
+
+        # 45个属性的数据,对应choose_emotion中第一个参数
+        # facial_expression1, examples1 = load_data(path1)
+        # facial_expression2, examples2 = load_data(path2)
+        #
+        # print "For clean data:"
+        # res = cross_validation_test(examples1, facial_expression1)
+        # print "Cross Validation matrix:"
+        # print res
+        # print "evaluate result: "
+        # evaluation(res)
+        #
+        # print "For noisy data:"
+        # res = cross_validation_test(examples2, facial_expression2)
+        # print "Cross Validation matrix:"
+        # print res
+        # print "evaluate result: "
+        # evaluation(res)
