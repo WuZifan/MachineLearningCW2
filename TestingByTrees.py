@@ -347,7 +347,6 @@ def load_data(path):
     data = sio.loadmat(path)
     facial_expression = topythonlist(data['y'])
     examples = topythonnestedlist(data['x'])
-
     return facial_expression, examples
 
 
@@ -508,74 +507,11 @@ if __name__ == "__main__":
     classification_rate = []
     for ind, path in enumerate(source):
         facial_expression, example = load_data(path)
-        print "For %dth input file %s : " % (ind + 1, path)
-        res= cross_validation_test(example, facial_expression)
-        mytree_list = cross_validation_test2(example, facial_expression)
-        print "Cross Validation matrix:"
-        print res
-        print "Evaluate Result: "
-        average_recall, average_precision_rate, f1_measures, average_classification_rate = evaluation(res)
-        print
+        mytree_list=tree_read("")
+        test_label=predictions(mytree_list,example)
+        print test_label
 
-        classification_rate.append(average_classification_rate)
-        pos = np.arange(1, len(average_recall) + 1)
-
-        ax[0].bar(pos, average_recall, align='center', alpha=0.4, color=random_color())
-        ax[0].set_title("Average Recall")
-        ax[0].legend(source, loc='upper left')
-        ax[0].set_ylim(0.0, 1.2)
-        ax[0].grid(True)
-
-        ax[1].bar(pos, average_precision_rate, align='center', alpha=0.4, color=random_color())
-        ax[1].set_title("Average Precision Rate")
-        ax[1].legend(source, loc='upper left')
-        ax[1].set_ylim(0.0, 1.2)
-        ax[1].grid(True)
-
-        ax[2].bar(pos, f1_measures, align='center', alpha=0.4, color=random_color())
-        ax[2].set_title("F1 Measure")
-        ax[2].legend(source, loc='upper left')
-        ax[2].set_ylim(0.0, 1.2)
-        ax[2].grid(True)
-
-        pos = np.arange(1, len(classification_rate) + 1)
-        ax[3].bar(pos, classification_rate, align='center', alpha=0.4, color=random_color())
-        ax[3].set_title("Classification Rate")
-        ax[3].legend(source, loc='upper left')
-        ax[3].set_ylim(0.0, 1.2)
-        ax[3].grid(True)
-
-    plt.show()
-
-    # 45个属性的数据,对应choose_emotion中第一个参数
-    # facial_expression1, examples1 = load_data(path1)
-    # facial_expression2, examples2 = load_data(path2)
-    #
-    # print "For clean data:"
-    # res = cross_validation_test(examples1, facial_expression1)
-    # print "Cross Validation matrix:"
-    # print res
-    # print "evaluate result: "
-    # evaluation(res)
-    #
-    # print "For noisy data:"
-    # res = cross_validation_test(examples2, facial_expression2)
-    # print "Cross Validation matrix:"
-    # print res
-    # print "evaluate result: "
-    # evaluation(res)
-
-    # for index, mytree in enumerate(mytree_list):
-    #     f = open('tree' + str(index + 1), 'w')
-    #     for node in mytree:
-    #         for ind, item in enumerate(node):
-    #             if ind != 2:
-    #                 f.write(str(item) + str(','))
-    #             else:
-    #                 for element in item:
-    #                     f.write(str(element) + str(','))
-    #         f.write('\n')
-    #     f.close()
-    # mytree_list=tree_read("")
-    # for mytree in mytree_list:
-    #     print mytree
+        f_label = open('tree_label' , 'w')
+        for mylabel in test_label:
+            f_label.write(str(mylabel))
+            f_label.write('\n')
